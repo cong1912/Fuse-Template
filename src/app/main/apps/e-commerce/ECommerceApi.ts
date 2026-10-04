@@ -14,7 +14,31 @@ const ECommerceApi = api
 	.injectEndpoints({
 		endpoints: (build) => ({
 			getECommerceProducts: build.query<GetECommerceProductsApiResponse, GetECommerceProductsApiArg>({
-				query: () => ({ url: `/mock-api/ecommerce/products` }),
+				query: () => ({ url: `/api/products?pageSize=1000` }),
+				transformResponse: (response: any) => {
+					return (response.items || []).map((p: any) => ({
+						id: p.id,
+						name: p.name,
+						handle: p.name.toLowerCase().replace(/\s+/g, '-'),
+						description: p.description,
+						categories: p.categoryId ? [p.categoryId] : [],
+						tags: [p.productType],
+						featuredImageId: '',
+						images: [],
+						priceTaxExcl: p.price,
+						priceTaxIncl: p.price,
+						taxRate: 0,
+						comparedPrice: p.price,
+						quantity: p.stockQuantity,
+						sku: p.sku,
+						width: '0',
+						height: '0',
+						depth: '0',
+						weight: p.weightInGrams ? p.weightInGrams.toString() : '0',
+						extraShippingFee: 0,
+						active: p.isActive
+					}));
+				},
 				providesTags: ['eCommerce_products']
 			}),
 			deleteECommerceProducts: build.mutation<DeleteECommerceProductsApiResponse, DeleteECommerceProductsApiArg>({
@@ -55,7 +79,46 @@ const ECommerceApi = api
 				invalidatesTags: ['eCommerce_product', 'eCommerce_products']
 			}),
 			getECommerceOrders: build.query<GetECommerceOrdersApiResponse, GetECommerceOrdersApiArg>({
-				query: () => ({ url: `/mock-api/ecommerce/orders` }),
+				query: () => ({ url: `/api/admin/orders?pageSize=1000` }),
+				transformResponse: (response: any) => {
+					return (response.items || []).map((o: any) => {
+						const statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+						const statusName = statuses[o.status] || 'Unknown';
+						return {
+							id: o.id,
+							reference: o.id.substring(0, 8).toUpperCase(),
+							subtotal: o.totalAmount.toString(),
+							tax: '0',
+							discount: '0',
+							total: o.totalAmount.toString(),
+							date: o.createdAtUtc,
+							customer: {
+								id: o.customerId,
+								firstName: 'Customer',
+								lastName: o.customerId.substring(0, 4),
+								avatar: '',
+								company: '',
+								jobTitle: '',
+								email: '',
+								phone: '',
+								invoiceAddress: { address: '', lat: 0, lng: 0 },
+								shippingAddress: { address: '', lat: 0, lng: 0 }
+							},
+							products: (o.items || []).map((i: any) => ({
+								id: i.productId,
+								name: `Product ${i.productId.substring(0, 4)}`,
+								quantity: i.quantity,
+								price: i.unitPrice.toString()
+							})),
+							status: [{
+								id: o.status.toString(),
+								name: statusName,
+								color: statusName === 'Delivered' ? 'bg-green-500 text-white' : 
+								       statusName === 'Cancelled' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+							}]
+						};
+					});
+				},
 				providesTags: ['eCommerce_orders']
 			}),
 			getECommerceOrder: build.query<GetECommerceOrderApiResponse, GetECommerceOrderApiArg>({
