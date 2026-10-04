@@ -9,31 +9,31 @@ const NotificationApi = api
 	.injectEndpoints({
 		endpoints: (build) => ({
 			getAllNotifications: build.query<GetAllNotificationsApiResponse, GetAllNotificationsApiArg>({
-				query: () => ({ url: `/mock-api/notifications` }),
+				query: () => ({ url: `/api/shop/notifications` }),
 				providesTags: ['notifications']
 			}),
 			createNotification: build.mutation<CreateNotificationApiResponse, CreateNotificationApiArg>({
 				query: (notification) => ({
-					url: `/mock-api/notifications`,
+					url: `/api/shop/notifications`,
 					method: 'POST',
 					data: notification
 				}),
 				invalidatesTags: ['notifications']
 			}),
 			deleteAllNotifications: build.mutation<DeleteAllNotificationsApiResponse, DeleteAllNotificationsApiArg>({
-				query: () => ({ url: `/mock-api/notifications`, method: 'DELETE' }),
+				query: () => ({ url: `/api/shop/notifications/read-all`, method: 'POST' }),
 				invalidatesTags: ['notifications']
 			}),
 			getNotification: build.query<GetNotificationApiResponse, GetNotificationApiArg>({
 				query: (notificationId) => ({
-					url: `/mock-api/notifications/${notificationId}`
+					url: `/api/shop/notifications/${notificationId}`
 				}),
 				providesTags: ['notification']
 			}),
 			deleteNotification: build.mutation<DeleteNotificationApiResponse, DeleteNotificationApiArg>({
 				query: (notificationId) => ({
-					url: `/mock-api/notifications/${notificationId}`,
-					method: 'DELETE'
+					url: `/api/shop/notifications/${notificationId}/read`,
+					method: 'POST'
 				}),
 				invalidatesTags: ['notifications']
 			})
