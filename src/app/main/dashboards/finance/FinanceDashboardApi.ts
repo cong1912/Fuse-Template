@@ -8,12 +8,18 @@ const FinanceDashboardApi = api
 	})
 	.injectEndpoints({
 		endpoints: (build) => ({
-			getFinanceDashboardWidgets: build.query<
-				GetFinanceDashboardWidgetsApiResponse,
-				GetFinanceDashboardWidgetsApiArg
-			>({
-				query: () => ({ url: `/mock-api/dashboards/finance/widgets` }),
-				providesTags: ['finance_dashboard_widgets']
+			getFinanceDashboardWidgets: build.query<any, void>({
+				query: () => ({ url: `/api/admin/analytics/dashboard-summary?days=30` }),
+				providesTags: ['finance_dashboard_widgets'],
+				transformResponse: (res: any) => {
+					return {
+						accountBalance: { growRate: res.revenueChangePercent, ami: res.grossRevenue, series: [{ name: 'Balance', data: [] }] },
+						budget: { expenses: 0, expensesLimit: 0, savings: 0, savingsGoal: 0, bills: 0, billsLimit: 0 },
+						currentStatement: { status: 'Paid', date: new Date().toLocaleDateString(), limit: 10000, spent: res.grossRevenue, minimum: 0 },
+						previousStatement: { status: 'Paid', date: new Date().toLocaleDateString(), limit: 10000, spent: res.previousPeriodRevenue, minimum: 0 },
+						recentTransactions: { columns: ['Date', 'Name', 'Amount', 'Status'], rows: [] }
+					};
+				}
 			})
 		}),
 		overrideExisting: false

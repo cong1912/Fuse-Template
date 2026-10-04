@@ -8,16 +8,16 @@ const ProfileApi = api
 	})
 	.injectEndpoints({
 		endpoints: (build) => ({
-			getProfilePhotosVideos: build.query<GetProfilePhotosVideosApiResponse, GetProfilePhotosVideosApiArg>({
-				query: () => ({ url: `/mock-api/profile/photos-videos` }),
+			getProfilePhotosVideos: build.query<any, void>({
+				queryFn: () => ({ data: [] }),
 				providesTags: ['profile_photos_videos']
 			}),
-			getProfileTimeline: build.query<GetProfileTimelineApiResponse, GetProfileTimelineApiArg>({
-				query: () => ({ url: `/mock-api/profile/timeline` }),
+			getProfileTimeline: build.query<any, void>({
+				queryFn: () => ({ data: [] }),
 				providesTags: ['profile_timeline']
 			}),
-			getProfileAbout: build.query<GetProfileAboutApiResponse, GetProfileAboutApiArg>({
-				query: () => ({ url: `/mock-api/profile/about` }),
+			getProfileAbout: build.query<any, void>({
+				queryFn: () => ({ data: { general: {}, work: {}, contact: {} } }),
 				providesTags: ['profile_about']
 			})
 		}),

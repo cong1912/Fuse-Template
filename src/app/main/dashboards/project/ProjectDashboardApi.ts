@@ -7,18 +7,12 @@ const ProjectDashboardApi = api
 	})
 	.injectEndpoints({
 		endpoints: (build) => ({
-			getProjectDashboardWidgets: build.query<
-				GetProjectDashboardWidgetsApiResponse,
-				GetProjectDashboardWidgetsApiArg
-			>({
-				query: () => ({ url: `/mock-api/dashboards/project/widgets` }),
+			getProjectDashboardWidgets: build.query<any, void>({
+				queryFn: () => ({ data: {} }),
 				providesTags: ['project_dashboard_widgets']
 			}),
-			getProjectDashboardProjects: build.query<
-				GetProjectDashboardProjectsApiResponse,
-				GetProjectDashboardProjectsApiArg
-			>({
-				query: () => ({ url: `/mock-api/dashboards/project/projects` }),
+			getProjectDashboardProjects: build.query<any, void>({
+				queryFn: () => ({ data: [] }),
 				providesTags: ['project_dashboard_projects']
 			})
 		}),
