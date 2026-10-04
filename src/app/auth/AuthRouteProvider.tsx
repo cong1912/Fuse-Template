@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+﻿import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import FuseAuthorization from '@fuse/core/FuseAuthorization';
 import { useAppDispatch } from 'app/store/store';
 import FuseSplashScreen from '@fuse/core/FuseSplashScreen/FuseSplashScreen';
@@ -12,18 +12,12 @@ import {
 } from 'src/app/auth/user/store/userSlice';
 import BrowserRouter from '@fuse/core/BrowserRouter';
 import { PartialDeep } from 'type-fest';
-import firebase from 'firebase/compat/app';
 import _ from '@lodash';
 import { useSelector } from 'react-redux';
 import withReducer from 'app/store/withReducer';
 import useJwtAuth, { JwtAuth } from './services/jwt/useJwtAuth';
 import { User } from './user';
-import useFirebaseAuth from './services/firebase/useFirebaseAuth';
 import UserModel from './user/models/UserModel';
-
-/**
- * Initialize Firebase
- */
 
 export type SignInPayload = {
 	email: string;
@@ -38,7 +32,6 @@ export type SignUpPayload = {
 
 type AuthContext = {
 	jwtService?: JwtAuth<User, SignInPayload, SignUpPayload>;
-	firebaseService?: ReturnType<typeof useFirebaseAuth>;
 	signOut?: () => void;
 	updateUser?: (U: PartialDeep<User>) => void;
 	isAuthenticated: boolean;
@@ -54,14 +47,8 @@ function AuthRoute(props: AuthProviderProps) {
 	const { children } = props;
 	const dispatch = useAppDispatch();
 	const user = useSelector(selectUser);
-	/**
-	 * Get user role from store
-	 */
 	const userRole = useSelector(selectUserRole);
 
-	/**
-	 * Jwt auth service
-	 */
 	const jwtService = useJwtAuth({
 		config: {
 			tokenStorageKey: 'jwt_access_token',
@@ -88,102 +75,35 @@ function AuthRoute(props: AuthProviderProps) {
 			dispatch(updateUser(user));
 		},
 		onError: (error) => {
-			// eslint-disable-next-line no-console
 			console.warn(error);
 		}
 	});
 
-	/**
-	 * Firebase auth service
-	 */
-	const firebaseService: AuthContext['firebaseService'] = useFirebaseAuth<User>({
-		onSignedIn: (_user) => {
-			firebase
-				.database()
-				.ref(`users/${_user.uid}`)
-				.once('value')
-				.then((snapshot) => {
-					const user = snapshot.val() as User;
-					dispatch(setUser(user));
-					setAuthService('firebase');
-				});
-		},
-		onSignedUp: (userCredential, displayName) => {
-			const _user = userCredential.user;
-
-			const user = UserModel({
-				uid: _user.uid,
-				role: ['admin'],
-				data: {
-					displayName,
-					email: _user.email
-				}
-			});
-
-			firebaseService.updateUser(user);
-
-			setAuthService('firebase');
-		},
-		onSignedOut: () => {
-			dispatch(resetUser());
-			resetAuthService();
-		},
-		onUpdateUser: (user) => {
-			dispatch(updateUser(user));
-		},
-		onError: (error) => {
-			// eslint-disable-next-line no-console
-			console.warn(error);
-		}
-	});
-
-	/**
-	 * Check if services is in loading state
-	 */
 	const isLoading = useMemo(
-		() => jwtService?.isLoading || firebaseService?.isLoading,
-		[jwtService?.isLoading, firebaseService?.isLoading]
+		() => jwtService?.isLoading,
+		[jwtService?.isLoading]
 	);
 
-	/**
-	 * Check if user is authenticated
-	 */
 	const isAuthenticated = useMemo(
-		() => jwtService?.isAuthenticated || firebaseService?.isAuthenticated,
-		[jwtService?.isAuthenticated, firebaseService?.isAuthenticated]
+		() => jwtService?.isAuthenticated,
+		[jwtService?.isAuthenticated]
 	);
 
-	/**
-	 * Combine auth services
-	 */
 	const combinedAuth = useMemo<AuthContext>(
 		() => ({
 			jwtService,
-			firebaseService,
 			signOut: () => {
 				const authService = getAuthService();
-
 				if (authService === 'jwt') {
 					return jwtService?.signOut();
 				}
-
-				if (authService === 'firebase') {
-					return firebaseService?.signOut();
-				}
-
 				return null;
 			},
 			updateUser: (userData) => {
 				const authService = getAuthService();
-
 				if (authService === 'jwt') {
 					return jwtService?.updateUser(userData);
 				}
-
-				if (authService === 'firebase') {
-					return firebaseService?.updateUser(_.merge({}, user, userData));
-				}
-
 				return null;
 			},
 			isAuthenticated
@@ -191,32 +111,20 @@ function AuthRoute(props: AuthProviderProps) {
 		[isAuthenticated, user]
 	);
 
-	/**
-	 * Get auth service
-	 */
 	const getAuthService = useCallback(() => {
 		return localStorage.getItem('authService');
 	}, []);
 
-	/**
-	 * Set auth service
-	 */
 	const setAuthService = useCallback((authService: string) => {
 		if (authService) {
 			localStorage.setItem('authService', authService);
 		}
 	}, []);
 
-	/**
-	 * Reset auth service
-	 */
 	const resetAuthService = useCallback(() => {
 		localStorage.removeItem('authService');
 	}, []);
 
-	/**
-	 * Render loading screen while loading user data
-	 */
 	if (isLoading) {
 		return <FuseSplashScreen />;
 	}
