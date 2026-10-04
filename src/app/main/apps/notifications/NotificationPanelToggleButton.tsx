@@ -17,7 +17,7 @@ type NotificationPanelToggleButtonProps = {
  */
 function NotificationPanelToggleButton(props: NotificationPanelToggleButtonProps) {
 	const { children = <FuseSvgIcon>heroicons-outline:bell</FuseSvgIcon> } = props;
-	const { data: notifications } = useGetAllNotificationsQuery();
+	const { data: notifications = [] } = useGetAllNotificationsQuery();
 
 	const dispatch = useAppDispatch();
 
@@ -39,3 +39,4 @@ function NotificationPanelToggleButton(props: NotificationPanelToggleButtonProps
 }
 
 export default withReducer('notificationPanel', reducer)(NotificationPanelToggleButton);
+

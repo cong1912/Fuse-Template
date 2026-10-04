@@ -43,7 +43,7 @@ function NotificationPanel() {
 	const [deleteAllNotifications] = useDeleteAllNotificationsMutation();
 	const [addNotification] = useCreateNotificationMutation();
 
-	const { data: notifications, isLoading } = useGetAllNotificationsQuery();
+	const { data: notifications = [], isLoading } = useGetAllNotificationsQuery();
 
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
@@ -152,3 +152,4 @@ function NotificationPanel() {
 }
 
 export default withReducer('notificationPanel', reducer)(NotificationPanel);
+
