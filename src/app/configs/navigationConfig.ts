@@ -72,7 +72,8 @@ const navigationConfig: FuseNavItemType[] = [
 		icon: 'heroicons-outline:cog',
 		children: [
 			{ id: 'staff', title: 'Nhân viên', type: 'item', url: '/settings/staff' },
-			{ id: 'account', title: 'Tài khoản', type: 'item', url: '/account/profile' }
+			{ id: 'account', title: 'Tài khoản', type: 'item', url: '/account/profile' },
+			{ id: 'integrations', title: 'Tích hợp (Integrations)', type: 'item', url: '/settings/integrations' }
 		]
 	}
 ];
