@@ -13,5 +13,7 @@ export type User = {
 		shortcuts?: string[];
 		settings?: Partial<FuseSettingsConfigType>;
 		loginRedirectUrl?: string; // The URL to redirect to after login.
+		tenant?: any;
+		plan?: any;
 	};
 };

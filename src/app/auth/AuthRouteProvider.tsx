@@ -1,4 +1,4 @@
-﻿import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import FuseAuthorization from '@fuse/core/FuseAuthorization';
 import { useAppDispatch } from 'app/store/store';
 import FuseSplashScreen from '@fuse/core/FuseSplashScreen/FuseSplashScreen';
@@ -12,12 +12,10 @@ import {
 } from 'src/app/auth/user/store/userSlice';
 import BrowserRouter from '@fuse/core/BrowserRouter';
 import { PartialDeep } from 'type-fest';
-import _ from '@lodash';
 import { useSelector } from 'react-redux';
 import withReducer from 'app/store/withReducer';
 import useJwtAuth, { JwtAuth } from './services/jwt/useJwtAuth';
 import { User } from './user';
-import UserModel from './user/models/UserModel';
 
 export type SignInPayload = {
 	email: string;
@@ -55,7 +53,7 @@ function AuthRoute(props: AuthProviderProps) {
 			signInUrl: '/api/auth/login',
 			signUpUrl: '/api/auth/register',
 			tokenRefreshUrl: '/api/auth/refresh',
-			getUserUrl: '/api/shop/staff/me',
+			getUserUrl: '/api/shop/me/context',
 			updateUserUrl: '/api/shop/staff/me',
 			updateTokenFromHeader: true
 		},
@@ -79,15 +77,9 @@ function AuthRoute(props: AuthProviderProps) {
 		}
 	});
 
-	const isLoading = useMemo(
-		() => jwtService?.isLoading,
-		[jwtService?.isLoading]
-	);
+	const isLoading = useMemo(() => jwtService?.isLoading, [jwtService?.isLoading]);
 
-	const isAuthenticated = useMemo(
-		() => jwtService?.isAuthenticated,
-		[jwtService?.isAuthenticated]
-	);
+	const isAuthenticated = useMemo(() => jwtService?.isAuthenticated, [jwtService?.isAuthenticated]);
 
 	const combinedAuth = useMemo<AuthContext>(
 		() => ({

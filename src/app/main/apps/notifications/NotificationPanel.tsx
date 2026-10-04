@@ -152,4 +152,3 @@ function NotificationPanel() {
 }
 
 export default withReducer('notificationPanel', reducer)(NotificationPanel);
-

@@ -63,7 +63,6 @@ function FuseNavVerticalCollapse(props: FuseNavItemComponentProps) {
 				setOpen(true);
 			}
 		}
-		// eslint-disable-next-line
 	}, [location, item]);
 
 	const component = item.url ? NavLinkAdapter : 'li';

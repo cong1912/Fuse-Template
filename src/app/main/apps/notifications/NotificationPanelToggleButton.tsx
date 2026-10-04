@@ -39,4 +39,3 @@ function NotificationPanelToggleButton(props: NotificationPanelToggleButtonProps
 }
 
 export default withReducer('notificationPanel', reducer)(NotificationPanelToggleButton);
-

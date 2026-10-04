@@ -1,7 +1,7 @@
-﻿import { memo, lazy, Suspense } from 'react';
+import { memo, lazy, Suspense } from 'react';
 
 const QuickPanel = lazy(() => import('app/theme-layouts/shared-components/quickPanel/QuickPanel'));
-const MessengerPanel = lazy(() => import('src/app/main/apps/messenger/messengerPanel/MessengerPanel'));
+
 const NotificationPanel = lazy(() => import('src/app/main/apps/notifications/NotificationPanel'));
 
 /**
@@ -12,12 +12,9 @@ function RightSideLayout1() {
 		<Suspense>
 			<QuickPanel />
 
-			
-
 			<NotificationPanel />
 		</Suspense>
 	);
 }
 
 export default memo(RightSideLayout1);
-
