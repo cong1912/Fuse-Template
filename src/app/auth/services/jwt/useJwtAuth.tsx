@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AxiosError, AxiosResponse } from 'axios';
-import axios from '../../api/axiosClient';
+import axios from 'app/api/axiosClient';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
 import _ from '@lodash';
 import { PartialDeep } from 'type-fest';

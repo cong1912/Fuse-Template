@@ -1,23 +1,26 @@
-import { BaseQueryFn, createApi } from '@reduxjs/toolkit/query/react';
-import Axios, { AxiosError, AxiosRequestConfig } from 'axios';
+﻿import { BaseQueryFn, createApi } from '@reduxjs/toolkit/query/react';
+import { AxiosRequestConfig, AxiosError } from 'axios';
+import axiosClient from '../api/axiosClient';
 
 const axiosBaseQuery =
-	(): BaseQueryFn<AxiosRequestConfig<unknown>, unknown, AxiosError> =>
+	(): BaseQueryFn<AxiosRequestConfig<unknown>, unknown, unknown> =>
 	async ({ url, method, data, params }) => {
 		try {
-			Axios.defaults.baseURL = '/api';
-			const result = await Axios({
+			const result = await axiosClient({
 				url,
 				method,
 				data,
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				params
 			});
 			return { data: result.data };
 		} catch (axiosError) {
 			const error = axiosError as AxiosError;
 			return {
-				error
+				error: {
+					status: error.response?.status,
+					data: error.response?.data,
+					message: error.message
+				}
 			};
 		}
 	};

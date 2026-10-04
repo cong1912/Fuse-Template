@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 export const TOKEN_STORAGE_KEY = 'jwt_access_token';
-export const API_BASE_URL = 'http://localhost:5001';
+export const API_BASE_URL = 'http://localhost:5269';
 
 // Configure global axios baseURL as fallback for components calling axios directly
 axios.defaults.baseURL = API_BASE_URL;
@@ -42,3 +42,4 @@ axiosClient.interceptors.response.use(
 );
 
 export default axiosClient;
+
