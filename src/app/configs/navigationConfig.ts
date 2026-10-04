@@ -23,6 +23,20 @@ const navigationConfig: FuseNavItemType[] = [
 		url: '/apps/e-commerce/products'
 	},
 	{
+		id: 'categories',
+		title: 'Categories',
+		type: 'item',
+		icon: 'heroicons-outline:view-list',
+		url: '/apps/e-commerce/categories'
+	},
+	{
+		id: 'product-classes',
+		title: 'Product Classes',
+		type: 'item',
+		icon: 'heroicons-outline:collection',
+		url: '/apps/e-commerce/product-classes'
+	},
+	{
 		id: 'customers',
 		title: 'Khách hàng',
 		type: 'item',
