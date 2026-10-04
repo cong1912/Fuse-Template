@@ -1,17 +1,169 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
+import axios from '../../api/axiosClient';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
 import _ from '@lodash';
 import { PartialDeep } from 'type-fest';
+import UserModel from '../../user/models/UserModel';
 
 const defaultAuthConfig = {
 	tokenStorageKey: 'jwt_access_token',
-	signInUrl: 'api/auth/sign-in',
-	signUpUrl: 'api/auth/sign-up',
-	tokenRefreshUrl: 'api/auth/refresh',
-	getUserUrl: 'api/auth/user',
-	updateUserUrl: 'api/auth/user',
+	signInUrl: '/api/auth/login',
+	signUpUrl: '/api/auth/register',
+	tokenRefreshUrl: '/api/auth/refresh',
+	getUserUrl: '/api/shop/staff/me',
+	updateUserUrl: '/api/shop/staff/me',
 	updateTokenFromHeader: false
+};
+
+/**
+ * Map C# Role (e.g., "Admin", "Staff", "User") to Fuse array format (e.g., ['admin'])
+ */
+export const mapRoleToFuseRoles = (role: unknown): string[] => {
+	if (!role) {
+		return ['admin']; // Default fallback role
+	}
+
+	if (Array.isArray(role)) {
+		const mapped = role.flatMap((r) => mapRoleToFuseRoles(r));
+		return mapped.length > 0 ? mapped : ['admin'];
+	}
+
+	if (typeof role === 'string') {
+		const normalized = role.trim().toLowerCase();
+		switch (normalized) {
+			case 'admin':
+			case 'administrator':
+			case 'superadmin':
+			case 'owner':
+				return ['admin'];
+			case 'staff':
+			case 'manager':
+			case 'vendor':
+			case 'employee':
+				return ['staff'];
+			case 'user':
+			case 'customer':
+			case 'viewer':
+				return ['user'];
+			default:
+				return [normalized];
+		}
+	}
+
+	return ['admin'];
+};
+
+/**
+ * Extract claims from JWT token
+ */
+export const decodeTokenClaims = (
+	token: string
+): {
+	uid: string;
+	email: string;
+	role: string[];
+	displayName: string;
+} => {
+	try {
+		const decoded: any = jwtDecode(token);
+		const uid =
+			decoded?.sub ||
+			decoded?.nameid ||
+			decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
+			'';
+		const email =
+			decoded?.email ||
+			decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ||
+			'';
+		const rawRole =
+			decoded?.role ||
+			decoded?.roles ||
+			decoded?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+			'Admin';
+		const displayName =
+			decoded?.name ||
+			decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+			(email ? email.split('@')[0] : '');
+
+		return {
+			uid: String(uid),
+			email,
+			role: mapRoleToFuseRoles(rawRole),
+			displayName
+		};
+	} catch {
+		return {
+			uid: '',
+			email: '',
+			role: ['admin'],
+			displayName: ''
+		};
+	}
+};
+
+/**
+ * Map user data from backend response to Fuse User format
+ */
+export const mapUserData = (
+	rawUser: any,
+	fallbackEmail?: string,
+	fallbackUid?: string
+): any => {
+	if (!rawUser && !fallbackEmail && !fallbackUid) {
+		return null;
+	}
+
+	const email =
+		rawUser?.email ||
+		rawUser?.data?.email ||
+		rawUser?.user?.email ||
+		fallbackEmail ||
+		'';
+
+	const uid =
+		rawUser?.uid ||
+		rawUser?.uuid ||
+		rawUser?.id ||
+		rawUser?.userId ||
+		fallbackUid ||
+		'';
+
+	const rawRole =
+		rawUser?.role ||
+		rawUser?.roles ||
+		rawUser?.user?.role ||
+		rawUser?.user?.roles;
+
+	const role = mapRoleToFuseRoles(rawRole);
+
+	const displayName =
+		rawUser?.displayName ||
+		rawUser?.fullName ||
+		rawUser?.name ||
+		rawUser?.data?.displayName ||
+		rawUser?.user?.displayName ||
+		(email ? email.split('@')[0] : 'User');
+
+	const photoURL =
+		rawUser?.photoURL ||
+		rawUser?.avatar ||
+		rawUser?.avatarUrl ||
+		rawUser?.data?.photoURL ||
+		'';
+
+	return UserModel({
+		uid: String(uid),
+		role,
+		data: {
+			displayName,
+			email,
+			photoURL,
+			shortcuts: rawUser?.data?.shortcuts || rawUser?.shortcuts || [],
+			settings: rawUser?.data?.settings || rawUser?.settings || {},
+			loginRedirectUrl: rawUser?.data?.loginRedirectUrl || rawUser?.loginRedirectUrl || '/'
+		}
+	});
 };
 
 export type JwtAuthProps<T> = {
@@ -176,16 +328,29 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 				try {
 					setIsLoading(true);
 
-					const response: AxiosResponse<User> = await axios.get(authConfig.getUserUrl, {
+					const response: AxiosResponse<any> = await axios.get(authConfig.getUserUrl, {
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
 
-					const userData = response?.data;
+					const userData = mapUserData(response?.data) as unknown as User;
 
 					handleSignInSuccess(userData, accessToken);
 
 					return true;
 				} catch (error) {
+					// Fallback: If getUserUrl is unreachable but token is valid, restore session from token claims
+					const claims = decodeTokenClaims(accessToken);
+					if (claims.email || claims.uid) {
+						const fallbackUser = mapUserData({
+							uid: claims.uid,
+							email: claims.email,
+							role: claims.role,
+							displayName: claims.displayName
+						}) as unknown as User;
+						handleSignInSuccess(fallbackUser, accessToken);
+						return true;
+					}
+
 					const axiosError = error as AxiosError;
 
 					handleSignInFailure(axiosError);
@@ -216,54 +381,105 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 	 * Sign in
 	 */
 	const signIn = async (credentials: SignInPayload) => {
-		const response = axios.post(authConfig.signInUrl, credentials);
+		try {
+			const response = await axios.post(authConfig.signInUrl, credentials);
 
-		response.then(
-			(res: AxiosResponse<{ user: User; access_token: string }>) => {
-				const userData = res?.data?.user;
-				const accessToken = res?.data?.access_token;
+			// Extract accessToken from response.data.accessToken, response.data.token, response.data.access_token
+			const accessToken: string =
+				response?.data?.accessToken ||
+				response?.data?.token ||
+				response?.data?.access_token ||
+				(response?.data?.data && (response.data.data.accessToken || response.data.data.token));
 
-				handleSignInSuccess(userData, accessToken);
-
-				return userData;
-			},
-			(error) => {
-				const axiosError = error as AxiosError;
-
-				handleSignInFailure(axiosError);
-
-				return axiosError;
+			if (!accessToken) {
+				throw new Error('Access token is missing from the login response');
 			}
-		);
 
-		return response;
+			setSession(accessToken);
+
+			let userData: User;
+
+			// If the login response itself includes a user object
+			if (response?.data?.user) {
+				userData = mapUserData(response.data.user) as unknown as User;
+			} else {
+				// Fetch user info from getUserUrl (GET /api/shop/staff/me)
+				try {
+					const userResponse = await axios.get(authConfig.getUserUrl, {
+						headers: { Authorization: `Bearer ${accessToken}` }
+					});
+					userData = mapUserData(
+						userResponse?.data,
+						response?.data?.email || (credentials as Record<string, unknown>)?.email as string,
+						response?.data?.userId || response?.data?.id
+					) as unknown as User;
+				} catch {
+					// Fallback: map user info from login response + token claims
+					const claims = decodeTokenClaims(accessToken);
+					userData = mapUserData({
+						uid: response?.data?.userId || response?.data?.id || claims.uid,
+						email: response?.data?.email || claims.email || (credentials as Record<string, unknown>)?.email,
+						role: claims.role || 'Admin',
+						displayName: response?.data?.fullName || claims.displayName || response?.data?.email || (credentials as Record<string, unknown>)?.email
+					}) as unknown as User;
+				}
+			}
+
+			handleSignInSuccess(userData, accessToken);
+
+			return response;
+		} catch (error) {
+			const axiosError = error as AxiosError;
+
+			// Format error response so JwtSignInTab can render message without crashing
+			if (axiosError?.response && axiosError.response.data) {
+				const data: any = axiosError.response.data;
+				if (!Array.isArray(data)) {
+					const message =
+						data?.detail ||
+						data?.message ||
+						data?.title ||
+						(typeof data === 'string' ? data : 'Authentication failed. Please check your credentials.');
+					axiosError.response.data = [
+						{
+							type: 'root',
+							message
+						}
+					];
+				}
+			}
+
+			handleSignInFailure(axiosError);
+			return Promise.reject(axiosError);
+		}
 	};
 
 	/**
 	 * Sign up
 	 */
-	const signUp = useCallback((data: SignUpPayload) => {
-		const response = axios.post(authConfig.signUpUrl, data);
+	const signUp = useCallback(async (data: SignUpPayload) => {
+		try {
+			const response = await axios.post(authConfig.signUpUrl, data);
 
-		response.then(
-			(res: AxiosResponse<{ user: User; access_token: string }>) => {
-				const userData = res?.data?.user;
-				const accessToken = res?.data?.access_token;
+			const accessToken =
+				response?.data?.accessToken ||
+				response?.data?.token ||
+				response?.data?.access_token;
 
-				handleSignUpSuccess(userData, accessToken);
-
-				return userData;
-			},
-			(error) => {
-				const axiosError = error as AxiosError;
-
-				handleSignUpFailure(axiosError);
-
-				return axiosError;
+			if (accessToken) {
+				setSession(accessToken);
 			}
-		);
 
-		return response;
+			const userData = mapUserData(response?.data?.user || response?.data) as unknown as User;
+
+			handleSignUpSuccess(userData, accessToken);
+
+			return response;
+		} catch (error) {
+			const axiosError = error as AxiosError;
+			handleSignUpFailure(axiosError);
+			return Promise.reject(axiosError);
+		}
 	}, []);
 
 	/**
@@ -288,7 +504,7 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 				userData
 			);
 
-			const updatedUserData = response?.data;
+			const updatedUserData = mapUserData(response?.data) as unknown as User;
 
 			onUpdateUser(updatedUserData);
 
@@ -307,9 +523,13 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 	const refreshToken = async () => {
 		setIsLoading(true);
 		try {
-			const response: AxiosResponse<string> = await axios.post(authConfig.tokenRefreshUrl);
+			const response: AxiosResponse<any> = await axios.post(authConfig.tokenRefreshUrl);
 
-			const accessToken = response?.headers?.['New-Access-Token'] as string;
+			const accessToken =
+				(response?.headers?.['New-Access-Token'] as string) ||
+				response?.data?.accessToken ||
+				response?.data?.token ||
+				response?.data?.access_token;
 
 			if (accessToken) {
 				setSession(accessToken);
@@ -358,3 +578,4 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 };
 
 export default useJwtAuth;
+

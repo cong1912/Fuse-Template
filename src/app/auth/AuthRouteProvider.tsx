@@ -65,11 +65,11 @@ function AuthRoute(props: AuthProviderProps) {
 	const jwtService = useJwtAuth({
 		config: {
 			tokenStorageKey: 'jwt_access_token',
-			signInUrl: 'mock-api/auth/sign-in',
-			signUpUrl: 'mock-api/auth/sign-up',
-			tokenRefreshUrl: 'mock-api/auth/refresh',
-			getUserUrl: 'mock-api/auth/user',
-			updateUserUrl: 'mock-api/auth/user',
+			signInUrl: '/api/auth/login',
+			signUpUrl: '/api/auth/register',
+			tokenRefreshUrl: '/api/auth/refresh',
+			getUserUrl: '/api/shop/staff/me',
+			updateUserUrl: '/api/shop/staff/me',
 			updateTokenFromHeader: true
 		},
 		onSignedIn: (user: User) => {

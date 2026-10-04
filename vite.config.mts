@@ -28,10 +28,18 @@ export default defineConfig({
 	],
 	build: {
 		outDir: 'build',
+		emptyOutDir: false
 	},
 	server: {
 		open: true,
-		port: 3000
+		port: 3000,
+		proxy: {
+			'/api': {
+				target: 'http://localhost:5001',
+				changeOrigin: true,
+				secure: false
+			}
+		}
 	},
 	define:{
 		global: 'window',
@@ -48,7 +56,8 @@ export default defineConfig({
 			"app/shared-components": "/src/app/shared-components",
 			"app/configs": "/src/app/configs",
 			"app/theme-layouts": "/src/app/theme-layouts",
-			"app/AppContext": "/src/app/AppContext"
+			"app/AppContext": "/src/app/AppContext",
+			"app/api": "/src/app/api"
 		},
 	},
 	"optimizeDeps": {

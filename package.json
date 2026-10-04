@@ -5,7 +5,7 @@
     "type": "module",
     "dependencies": {
         "@emotion/cache": "11.11.0",
-        "@emotion/react": "11.11.3",
+        "@emotion/react": "^11.11.3",
         "@emotion/styled": "11.11.0",
         "@fullcalendar/core": "6.1.8",
         "@fullcalendar/daygrid": "6.1.8",
@@ -181,7 +181,7 @@
     "scripts": {
         "start": "npm run dev",
         "dev": "vite",
-        "build": "NODE_OPTIONS=--max-old-space-size=4096 tsc && vite build",
+        "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
         "build-docs": "ts-node --esm ./src/app/main/documentation/material-ui-components/build.ts",
