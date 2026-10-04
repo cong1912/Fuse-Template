@@ -53,8 +53,8 @@ function AuthRoute(props: AuthProviderProps) {
 			signInUrl: '/api/auth/login',
 			signUpUrl: '/api/auth/register',
 			tokenRefreshUrl: '/api/auth/refresh',
-			getUserUrl: '/api/shop/me/context',
-			updateUserUrl: '/api/shop/staff/me',
+			getUserUrl: '/api/auth/me',
+			updateUserUrl: '/api/auth/me',
 			updateTokenFromHeader: true
 		},
 		onSignedIn: (user: User) => {
