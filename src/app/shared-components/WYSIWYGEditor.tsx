@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
-import { convertToRaw, EditorState } from 'draft-js';
+import { convertToRaw, EditorState, ContentState, convertFromHTML } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
@@ -30,20 +30,34 @@ const Root = styled('div')({
 type WYSIWYGEditorComponentProps = {
 	className?: string;
 	onChange: (T: string) => void;
+	value?: string;
+	[x: string]: any;
 };
 
 /**
  * The WYSIWYG editor component.
  */
 function WYSIWYGEditorComponent(props: WYSIWYGEditorComponentProps, ref: React.ForwardedRef<HTMLDivElement>) {
-	const { onChange, className = '' } = props;
+	const { onChange, value, className = '' } = props;
 
-	const [editorState, setEditorState] = useState(EditorState.createEmpty());
+	const [editorState, setEditorState] = useState(() => {
+		if (value) {
+			const blocksFromHTML = convertFromHTML(value);
+			if (blocksFromHTML.contentBlocks) {
+				const state = ContentState.createFromBlockArray(
+					blocksFromHTML.contentBlocks,
+					blocksFromHTML.entityMap
+				);
+				return EditorState.createWithContent(state);
+			}
+		}
+		return EditorState.createEmpty();
+	});
 
 	/**
 	 * The function to call when the editor state changes.
 	 */
-	function onEditorStateChange(_editorState) {
+	function onEditorStateChange(_editorState: EditorState) {
 		setEditorState(_editorState);
 
 		return onChange(draftToHtml(convertToRaw(_editorState.getCurrentContent())));

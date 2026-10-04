@@ -3,6 +3,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { Controller, useFormContext } from 'react-hook-form';
 import { EcommerceProduct } from '../../ECommerceApi';
 
+import Typography from '@mui/material/Typography';
+import WYSIWYGEditor from 'app/shared-components/WYSIWYGEditor';
+
 /**
  * The basic info tab.
  */
@@ -36,17 +39,17 @@ function BasicInfoTab() {
 				name="description"
 				control={control}
 				render={({ field }) => (
-					<TextField
-						{...field}
-						className="mt-8 mb-16"
-						id="description"
-						label="Description"
-						type="text"
-						multiline
-						rows={5}
-						variant="outlined"
-						fullWidth
-					/>
+					<div className="mt-8 mb-16">
+						<Typography
+							className="mb-8 font-medium"
+							color="text.secondary"
+						>
+							Description
+						</Typography>
+						<WYSIWYGEditor
+							{...field}
+						/>
+					</div>
 				)}
 			/>
 

@@ -16,9 +16,8 @@ import { z } from 'zod';
 import ProductHeader from './ProductHeader';
 import BasicInfoTab from './tabs/BasicInfoTab';
 import InventoryTab from './tabs/InventoryTab';
-import PricingTab from './tabs/PricingTab';
 import ProductImagesTab from './tabs/ProductImagesTab';
-import ShippingTab from './tabs/ShippingTab';
+import VariantsTab from './tabs/VariantsTab';
 import { useGetECommerceProductQuery } from '../ECommerceApi';
 import ProductModel from './models/ProductModel';
 
@@ -143,15 +142,11 @@ function Product() {
 							/>
 							<Tab
 								className="h-64"
-								label="Pricing"
+								label="Variants"
 							/>
 							<Tab
 								className="h-64"
 								label="Inventory"
-							/>
-							<Tab
-								className="h-64"
-								label="Shipping"
 							/>
 						</Tabs>
 						<div className="p-16 sm:p-24 max-w-3xl">
@@ -164,15 +159,11 @@ function Product() {
 							</div>
 
 							<div className={tabValue !== 2 ? 'hidden' : ''}>
-								<PricingTab />
+								<VariantsTab />
 							</div>
 
 							<div className={tabValue !== 3 ? 'hidden' : ''}>
 								<InventoryTab />
-							</div>
-
-							<div className={tabValue !== 4 ? 'hidden' : ''}>
-								<ShippingTab />
 							</div>
 						</div>
 					</>

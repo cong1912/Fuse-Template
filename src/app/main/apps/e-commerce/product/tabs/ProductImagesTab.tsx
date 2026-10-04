@@ -6,6 +6,8 @@ import { Controller, useFormContext } from 'react-hook-form';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import Box from '@mui/material/Box';
 import { EcommerceProduct } from '../../ECommerceApi';
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProps } from 'react-beautiful-dnd';
+import { useEffect, useState } from 'react';
 
 const Root = styled('div')(({ theme }) => ({
 	'& .productImageFeaturedStar': {
@@ -44,14 +46,44 @@ const Root = styled('div')(({ theme }) => ({
 	}
 }));
 
+const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
+	const [enabled, setEnabled] = useState(false);
+	useEffect(() => {
+		const animation = requestAnimationFrame(() => setEnabled(true));
+		return () => {
+			cancelAnimationFrame(animation);
+			setEnabled(false);
+		};
+	}, []);
+	if (!enabled) {
+		return null;
+	}
+	return <Droppable {...props}>{children}</Droppable>;
+};
+
 /**
  * The product images tab.
  */
 function ProductImagesTab() {
 	const methods = useFormContext();
-	const { control, watch } = methods;
+	const { control, watch, setValue } = methods;
 
 	const images = watch('images') as EcommerceProduct['images'];
+
+	const onDragEnd = (result: DropResult) => {
+		if (!result.destination) {
+			return;
+		}
+
+		const startIndex = result.source.index;
+		const endIndex = result.destination.index;
+
+		const newImages = Array.from(images);
+		const [removed] = newImages.splice(startIndex, 1);
+		newImages.splice(endIndex, 0, removed);
+
+		setValue('images', newImages, { shouldDirty: true, shouldValidate: true });
+	};
 
 	return (
 		<Root>
@@ -101,7 +133,7 @@ function ProductImagesTab() {
 
 									const newImage = await readFileAsync();
 
-									onChange([newImage, ...(value as EcommerceProduct['images'])]);
+									onChange([...(value as EcommerceProduct['images'] || []), newImage]);
 								}}
 							/>
 							<FuseSvgIcon
@@ -113,39 +145,64 @@ function ProductImagesTab() {
 						</Box>
 					)}
 				/>
-				<Controller
-					name="featuredImageId"
-					control={control}
-					defaultValue=""
-					render={({ field: { onChange, value } }) => {
-						return (
-							<>
-								{images.map((media) => (
-									<div
-										onClick={() => onChange(media.id)}
-										onKeyDown={() => onChange(media.id)}
-										role="button"
-										tabIndex={0}
-										className={clsx(
-											'productImageItem flex items-center justify-center relative w-128 h-128 rounded-16 mx-12 mb-24 overflow-hidden cursor-pointer outline-none shadow hover:shadow-lg',
-											media.id === value && 'featured'
-										)}
-										key={media.id}
-									>
-										<FuseSvgIcon className="productImageFeaturedStar">
-											heroicons-solid:star
-										</FuseSvgIcon>
-										<img
-											className="max-w-none w-auto h-full"
-											src={media.url}
-											alt="product"
-										/>
-									</div>
-								))}
-							</>
-						);
-					}}
-				/>
+				
+				<DragDropContext onDragEnd={onDragEnd}>
+					<StrictModeDroppable droppableId="product-images" direction="horizontal">
+						{(provided) => (
+							<div
+								ref={provided.innerRef}
+								{...provided.droppableProps}
+								className="flex flex-wrap"
+							>
+								<Controller
+									name="featuredImageId"
+									control={control}
+									defaultValue=""
+									render={({ field: { onChange, value } }) => {
+										return (
+											<>
+												{images.map((media, index) => (
+													<Draggable
+														key={media.id}
+														draggableId={media.id}
+														index={index}
+													>
+														{(provided, snapshot) => (
+															<div
+																ref={provided.innerRef}
+																{...provided.draggableProps}
+																{...provided.dragHandleProps}
+																onClick={() => onChange(media.id)}
+																onKeyDown={() => onChange(media.id)}
+																role="button"
+																tabIndex={0}
+																className={clsx(
+																	'productImageItem flex items-center justify-center relative w-128 h-128 rounded-16 mx-12 mb-24 overflow-hidden cursor-pointer outline-none shadow hover:shadow-lg',
+																	media.id === value && 'featured',
+																	snapshot.isDragging && 'shadow-xl'
+																)}
+															>
+																<FuseSvgIcon className="productImageFeaturedStar">
+																	heroicons-solid:star
+																</FuseSvgIcon>
+																<img
+																	className="max-w-none w-auto h-full"
+																	src={media.url}
+																	alt="product"
+																/>
+															</div>
+														)}
+													</Draggable>
+												))}
+												{provided.placeholder}
+											</>
+										);
+									}}
+								/>
+							</div>
+						)}
+					</StrictModeDroppable>
+				</DragDropContext>
 			</div>
 		</Root>
 	);
