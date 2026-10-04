@@ -157,7 +157,14 @@ const ECommerceApi = api
 								name: statusName,
 								color: statusName === 'Delivered' ? 'bg-green-500 text-white' : 
 								       statusName === 'Cancelled' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-							}]
+							}],
+							payment: {
+								transactionId: '',
+								amount: o.totalAmount.toString(),
+								method: 'Credit Card',
+								date: o.createdAtUtc
+							},
+							shippingDetails: []
 						};
 					});
 				},
@@ -199,7 +206,14 @@ const ECommerceApi = api
 							name: statusName,
 							color: statusName === 'Delivered' ? 'bg-green-500 text-white' : 
 							       statusName === 'Cancelled' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-						}]
+						}],
+						payment: {
+							transactionId: '',
+							amount: o.totalAmount.toString(),
+							method: 'Credit Card',
+							date: o.createdAtUtc
+						},
+						shippingDetails: []
 					};
 				},
 				providesTags: ['eCommerce_order']
