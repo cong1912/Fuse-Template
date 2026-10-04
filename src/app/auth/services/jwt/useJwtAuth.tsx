@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import { useState, useEffect, useCallback } from 'react';
 import { AxiosError, AxiosResponse } from 'axios';
 import axios from 'app/api/axiosClient';
@@ -12,8 +12,8 @@ const defaultAuthConfig = {
 	signInUrl: '/api/auth/login',
 	signUpUrl: '/api/auth/register',
 	tokenRefreshUrl: '/api/auth/refresh',
-	getUserUrl: '/api/shop/staff/me',
-	updateUserUrl: '/api/shop/staff/me',
+	getUserUrl: '/api/auth/me',
+	updateUserUrl: '/api/auth/me',
 	updateTokenFromHeader: false
 };
 
@@ -556,6 +556,7 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 };
 
 export default useJwtAuth;
+
 
 
 
