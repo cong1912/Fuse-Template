@@ -6,7 +6,7 @@ const navigationConfig: FuseNavItemType[] = [
 		title: 'Trang chủ',
 		type: 'item',
 		icon: 'heroicons-outline:home',
-		url: '/dashboard'
+		url: '/dashboards/analytics'
 	},
 	{
 		id: 'orders',
@@ -27,14 +27,14 @@ const navigationConfig: FuseNavItemType[] = [
 		title: 'Khách hàng',
 		type: 'item',
 		icon: 'heroicons-outline:users',
-		url: '/customers'
+		url: '/reports/customers'
 	},
 	{
 		id: 'marketing',
 		title: 'Marketing',
 		type: 'item',
 		icon: 'heroicons-outline:speakerphone',
-		url: '/marketing'
+		url: '/reports/marketing'
 	},
 	{
 		id: 'analytics',
@@ -56,14 +56,14 @@ const navigationConfig: FuseNavItemType[] = [
 		title: 'Tài chính',
 		type: 'item',
 		icon: 'heroicons-outline:cash',
-		url: '/finance'
+		url: '/dashboards/finance'
 	},
 	{
 		id: 'platform',
 		title: 'Hệ thống/Platform',
 		type: 'item',
 		icon: 'heroicons-outline:server',
-		url: '/platform'
+		url: '/platform/overview'
 	},
 	{
 		id: 'settings',
