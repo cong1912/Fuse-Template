@@ -47,8 +47,8 @@ function jwtSignInTab() {
 	const { isValid, dirtyFields, errors } = formState;
 
 	useEffect(() => {
-		setValue('email', 'admin@fusetheme.com', { shouldDirty: true, shouldValidate: true });
-		setValue('password', 'admin', { shouldDirty: true, shouldValidate: true });
+		setValue('email', 'admin@ecommerce.com', { shouldDirty: true, shouldValidate: true });
+		setValue('password', 'Admin@123', { shouldDirty: true, shouldValidate: true });
 	}, [setValue]);
 
 	function onSubmit(formData: FormType) {
@@ -61,7 +61,16 @@ function jwtSignInTab() {
 			})
 			.catch(
 				(error: AxiosError<any>) => {
-					const errorData = error.response?.data;
+					if (!error.response) {
+						// Network error or backend is down
+						setError('password', {
+							type: 'manual',
+							message: 'Network Error: Could not connect to the API server.'
+						});
+						return;
+					}
+
+					const errorData = error.response.data;
 
 					if (Array.isArray(errorData)) {
 						errorData.forEach((err) => {
