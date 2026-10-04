@@ -12,6 +12,7 @@ const AuditPage = lazy(() => import('./audit/AuditPage'));
 const SystemPage = lazy(() => import('./system/SystemPage'));
 
 const PlatformConfig = {
+	auth: ['SuperAdmin'],
 	settings: {
 		layout: {
 			config: {}
@@ -62,3 +63,4 @@ const PlatformConfig = {
 };
 
 export default PlatformConfig;
+
