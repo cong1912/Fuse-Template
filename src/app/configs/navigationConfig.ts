@@ -1,30 +1,30 @@
-﻿import { FuseNavItemType } from '@fuse/core/FuseNavigation/types/FuseNavItemType';
+import { FuseNavItemType } from '@fuse/core/FuseNavigation/types/FuseNavItemType';
 
 const navigationConfig: FuseNavItemType[] = [
 	{
 		id: 'home',
-		title: 'Trang chá»§',
+		title: 'Trang chủ',
 		type: 'item',
 		icon: 'heroicons-outline:home',
 		url: '/dashboard'
 	},
 	{
 		id: 'orders',
-		title: 'ÄÆ¡n hÃ ng',
+		title: 'Đơn hàng',
 		type: 'item',
 		icon: 'heroicons-outline:shopping-cart',
 		url: '/apps/e-commerce/orders'
 	},
 	{
 		id: 'products',
-		title: 'Sáº£n pháº©m',
+		title: 'Sản phẩm',
 		type: 'item',
 		icon: 'heroicons-outline:cube',
 		url: '/apps/e-commerce/products'
 	},
 	{
 		id: 'customers',
-		title: 'KhÃ¡ch hÃ ng',
+		title: 'Khách hàng',
 		type: 'item',
 		icon: 'heroicons-outline:users',
 		url: '/customers'
@@ -38,45 +38,44 @@ const navigationConfig: FuseNavItemType[] = [
 	},
 	{
 		id: 'analytics',
-		title: 'PhÃ¢n tÃ­ch',
+		title: 'Phân tích',
 		type: 'collapse',
 		icon: 'heroicons-outline:chart-bar',
 		children: [
 			{ id: 'revenue', title: 'Doanh thu', type: 'item', url: '/reports/revenue' },
-			{ id: 'orders', title: 'ÄÆ¡n hÃ ng', type: 'item', url: '/reports/orders' },
-			{ id: 'products', title: 'Sáº£n pháº©m', type: 'item', url: '/reports/products' },
-			{ id: 'customers', title: 'KhÃ¡ch hÃ ng', type: 'item', url: '/reports/customers' },
-			{ id: 'finance', title: 'TÃ i chÃ­nh', type: 'item', url: '/reports/finance' },
-			{ id: 'inventory', title: 'Tá»“n kho', type: 'item', url: '/reports/inventory' },
+			{ id: 'orders', title: 'Đơn hàng', type: 'item', url: '/reports/orders' },
+			{ id: 'products', title: 'Sản phẩm', type: 'item', url: '/reports/products' },
+			{ id: 'customers', title: 'Khách hàng', type: 'item', url: '/reports/customers' },
+			{ id: 'finance', title: 'Tài chính', type: 'item', url: '/reports/finance' },
+			{ id: 'inventory', title: 'Tồn kho', type: 'item', url: '/reports/inventory' },
 			{ id: 'marketing-report', title: 'Marketing', type: 'item', url: '/reports/marketing' }
 		]
 	},
 	{
 		id: 'finance',
-		title: 'TÃ i chÃ­nh',
+		title: 'Tài chính',
 		type: 'item',
 		icon: 'heroicons-outline:cash',
 		url: '/finance'
 	},
 	{
 		id: 'platform',
-		title: 'Há»‡ thá»‘ng/Platform',
+		title: 'Hệ thống/Platform',
 		type: 'item',
 		icon: 'heroicons-outline:server',
 		url: '/platform'
 	},
 	{
 		id: 'settings',
-		title: 'CÃ i Ä‘áº·t',
+		title: 'Cài đặt',
 		type: 'collapse',
 		icon: 'heroicons-outline:cog',
 		children: [
-			{ id: 'staff', title: 'NhÃ¢n viÃªn', type: 'item', url: '/settings/staff' },
-			{ id: 'account', title: 'TÃ i khoáº£n', type: 'item', url: '/account/profile' },
-			{ id: 'integrations', title: 'TÃ­ch há»£p (Integrations)', type: 'item', url: '/settings/integrations' }
+			{ id: 'staff', title: 'Nhân viên', type: 'item', url: '/settings/staff' },
+			{ id: 'account', title: 'Tài khoản', type: 'item', url: '/account/profile' },
+			{ id: 'integrations', title: 'Tích hợp (Integrations)', type: 'item', url: '/settings/integrations' }
 		]
 	}
 ];
 
 export default navigationConfig;
-
