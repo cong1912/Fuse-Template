@@ -60,22 +60,40 @@ function jwtSignInTab() {
 				password
 			})
 			.catch(
-				(
-					error: AxiosError<
-						{
-							type: 'email' | 'password' | 'remember' | `root.${string}` | 'root';
-							message: string;
-						}[]
-					>
-				) => {
-					const errorData = error.response.data;
+				(error: AxiosError<any>) => {
+					const errorData = error.response?.data;
 
-					errorData.forEach((err) => {
-						setError(err.type, {
-							type: 'manual',
-							message: err.message
+					if (Array.isArray(errorData)) {
+						errorData.forEach((err) => {
+							setError(err.type, {
+								type: 'manual',
+								message: err.message
+							});
 						});
-					});
+					} else if (errorData?.errors) {
+						// ValidationProblemDetails
+						Object.keys(errorData.errors).forEach((key) => {
+							// Map to form fields if they match, else show general error
+							const lowerKey = key.toLowerCase();
+							const field = ['email', 'password'].includes(lowerKey) ? lowerKey as any : 'email';
+							setError(field, {
+								type: 'manual',
+								message: errorData.errors[key].join(', ')
+							});
+						});
+					} else if (errorData?.detail || errorData?.message || errorData?.title) {
+						// General ProblemDetails or simple message
+						setError('password', {
+							type: 'manual',
+							message: errorData.detail || errorData.message || errorData.title
+						});
+					} else {
+						// Fallback
+						setError('password', {
+							type: 'manual',
+							message: 'An unknown error occurred during sign in.'
+						});
+					}
 				}
 			);
 	}
