@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "puco-admin",
     "version": "10.0.1",
     "private": true,
@@ -101,6 +101,7 @@
         "semver": "7.5.4"
     },
     "devDependencies": {
+        "@playwright/test": "^1.40.0",
         "@babel/core": "7.23.7",
         "@babel/eslint-parser": "7.23.3",
         "@babel/node": "7.22.19",
@@ -179,6 +180,7 @@
         "vite-tsconfig-paths": "4.3.1"
     },
     "scripts": {
+        "test:e2e": "playwright test",
         "start": "npm run dev",
         "dev": "vite",
         "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 tsc && vite build",
