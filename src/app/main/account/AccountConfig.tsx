@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import authRoles from '../../auth/authRoles';
 
 const ProfilePage = lazy(() => import('./ProfilePage'));
 
@@ -8,6 +9,7 @@ const AccountConfig = {
 			config: {}
 		}
 	},
+	auth: authRoles.user,
 	routes: [
 		{
 			path: 'account',

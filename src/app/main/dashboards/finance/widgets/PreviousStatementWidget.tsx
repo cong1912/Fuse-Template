@@ -51,7 +51,7 @@ function PreviousStatementWidget() {
 						Card Limit
 					</Typography>
 					<Typography className="mt-8 font-medium text-3xl leading-none">
-						{limit.toLocaleString('en-US', {
+						{(limit ?? 0).toLocaleString('en-US', {
 							style: 'currency',
 							currency: 'USD'
 						})}
@@ -65,7 +65,7 @@ function PreviousStatementWidget() {
 						Spent
 					</Typography>
 					<Typography className="mt-8 font-medium text-3xl leading-none">
-						{spent.toLocaleString('en-US', {
+						{(spent ?? 0).toLocaleString('en-US', {
 							style: 'currency',
 							currency: 'USD'
 						})}
@@ -79,7 +79,7 @@ function PreviousStatementWidget() {
 						Minimum
 					</Typography>
 					<Typography className="mt-8 font-medium text-3xl leading-none">
-						{minimum.toLocaleString('en-US', {
+						{(minimum ?? 0).toLocaleString('en-US', {
 							style: 'currency',
 							currency: 'USD'
 						})}

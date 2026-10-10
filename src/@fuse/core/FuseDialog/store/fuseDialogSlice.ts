@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootStateType } from 'src/app/store/types';
-import { appSelector } from 'src/app/store/store';
 import { ReactElement } from 'react';
 
 type AppRootStateType = RootStateType<dialogSliceType>;
@@ -35,9 +34,9 @@ export const fuseDialogSlice = createSlice({
 
 export const { closeDialog, openDialog } = fuseDialogSlice.actions;
 
-export const selectFuseDialogState = appSelector((state: AppRootStateType) => state.fuseDialog.open);
+export const selectFuseDialogState = (state: AppRootStateType) => state?.fuseDialog?.open;
 
-export const selectFuseDialogProps = appSelector((state: AppRootStateType) => state.fuseDialog);
+export const selectFuseDialogProps = (state: AppRootStateType) => state?.fuseDialog;
 
 export type dialogSliceType = typeof fuseDialogSlice;
 

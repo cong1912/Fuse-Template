@@ -232,7 +232,9 @@ function Error404Page() {
 					<Typography
 						variant="h1"
 						className="mt-48 text-center text-4xl font-extrabold leading-tight tracking-tight sm:mt-96 md:text-7xl md:leading-none"
-					/>
+					>
+						404 - Không tìm thấy trang
+					</Typography>
 				</motion.div>
 				<motion.div
 					initial={{ opacity: 0, y: 40 }}
@@ -243,13 +245,15 @@ function Error404Page() {
 						color="text.secondary"
 						className="mt-8 text-center text-lg font-medium tracking-tight md:text-xl"
 					>
-						The page you requested could not be found.
+						Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển.
 					</Typography>
 				</motion.div>
 				<Link
-					className="mt-48 block font-normal"
+					className="mt-32 inline-block px-24 py-10 bg-primary text-white rounded-lg font-medium shadow-md hover:bg-primary-dark transition-colors"
 					to="/"
-				/>
+				>
+					← Quay về Trang chủ
+				</Link>
 			</div>
 		</div>
 	);

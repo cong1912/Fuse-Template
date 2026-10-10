@@ -10,6 +10,7 @@ import NotificationPanelToggleButton from 'src/app/main/apps/notifications/Notif
 import NavbarToggleButton from 'app/theme-layouts/shared-components/navbar/NavbarToggleButton';
 import AdjustFontSize from '../../shared-components/AdjustFontSize';
 import FullScreenToggle from '../../shared-components/FullScreenToggle';
+import ThemeModeToggle from '../../shared-components/ThemeModeToggle';
 import LanguageSwitcher from '../../shared-components/LanguageSwitcher';
 import NavigationSearch from '../../shared-components/navigation/NavigationSearch';
 import UserMenu from '../../shared-components/UserMenu';
@@ -64,6 +65,7 @@ function ToolbarLayout3(props: ToolbarLayout3Props) {
 							<NavigationSearch />
 						</Hidden>
 						<LanguageSwitcher />
+						<ThemeModeToggle />
 						<AdjustFontSize />
 						<FullScreenToggle />
 						<QuickPanelToggleButton />

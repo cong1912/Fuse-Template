@@ -5,17 +5,35 @@ import FuseUtils from '@fuse/utils';
 import { Controller, useFormContext } from 'react-hook-form';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import CircularProgress from '@mui/material/CircularProgress';
 import { EcommerceProduct } from '../../ECommerceApi';
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProps } from 'react-beautiful-dnd';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const Root = styled('div')(({ theme }) => ({
 	'& .productImageFeaturedStar': {
 		position: 'absolute',
-		top: 0,
-		right: 0,
+		top: 4,
+		right: 4,
 		color: orange[400],
-		opacity: 0
+		opacity: 0,
+		zIndex: 10
+	},
+
+	'& .productImageDelete': {
+		position: 'absolute',
+		top: 4,
+		left: 4,
+		opacity: 0,
+		zIndex: 10,
+		backgroundColor: 'rgba(255, 255, 255, 0.85)',
+		transition: 'opacity 0.15s ease-in-out',
+		'&:hover': {
+			backgroundColor: '#ef4444',
+			color: '#ffffff'
+		}
 	},
 
 	'& .productImageUpload': {
@@ -31,11 +49,14 @@ const Root = styled('div')(({ theme }) => ({
 		'&:hover': {
 			'& .productImageFeaturedStar': {
 				opacity: 0.8
+			},
+			'& .productImageDelete': {
+				opacity: 1
 			}
 		},
 		'&.featured': {
-			pointerEvents: 'none',
-			boxShadow: theme.shadows[3],
+			boxShadow: theme.shadows[4],
+			border: `2px solid ${orange[400]}`,
 			'& .productImageFeaturedStar': {
 				opacity: 1
 			},
@@ -65,10 +86,14 @@ const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
  * The product images tab.
  */
 function ProductImagesTab() {
+	const routeParams = useParams();
+	const { productId } = routeParams;
 	const methods = useFormContext();
 	const { control, watch, setValue } = methods;
+	const [isUploading, setIsUploading] = useState(false);
 
-	const images = watch('images') as EcommerceProduct['images'];
+	const images = (watch('images') || []) as EcommerceProduct['images'];
+	const featuredImageId = watch('featuredImageId');
 
 	const onDragEnd = (result: DropResult) => {
 		if (!result.destination) {
@@ -85,67 +110,125 @@ function ProductImagesTab() {
 		setValue('images', newImages, { shouldDirty: true, shouldValidate: true });
 	};
 
+	const handleDeleteImage = async (imageId: string) => {
+		if (productId && productId !== 'new' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageId)) {
+			try {
+				const token = localStorage.getItem('jwt_access_token');
+				await fetch(`/api/products/${productId}/images/${imageId}`, {
+					method: 'DELETE',
+					headers: token ? { Authorization: `Bearer ${token}` } : {}
+				});
+			} catch (err) {
+				console.error('Failed to delete image on server:', err);
+			}
+		}
+
+		const filtered = images.filter((img) => img.id !== imageId);
+		setValue('images', filtered, { shouldDirty: true, shouldValidate: true });
+		if (featuredImageId === imageId) {
+			setValue('featuredImageId', filtered.length > 0 ? filtered[0].id : '', { shouldDirty: true });
+		}
+	};
+
 	return (
 		<Root>
 			<div className="flex justify-center sm:justify-start flex-wrap -mx-16">
-				<Controller
-					name="images"
-					control={control}
-					render={({ field: { onChange, value } }) => (
-						<Box
-							sx={{
-								backgroundColor: (theme) =>
-									theme.palette.mode === 'light'
-										? lighten(theme.palette.background.default, 0.4)
-										: lighten(theme.palette.background.default, 0.02)
-							}}
-							component="label"
-							htmlFor="button-file"
-							className="productImageUpload flex items-center justify-center relative w-128 h-128 rounded-16 mx-12 mb-24 overflow-hidden cursor-pointer shadow hover:shadow-lg"
-						>
-							<input
-								accept="image/*"
-								className="hidden"
-								id="button-file"
-								type="file"
-								onChange={async (e) => {
-									function readFileAsync() {
-										return new Promise((resolve, reject) => {
-											const file = e?.target?.files?.[0];
-											if (!file) {
-												return;
-											}
-											const reader = new FileReader();
+				<Box
+					sx={{
+						backgroundColor: (theme) =>
+							theme.palette.mode === 'light'
+								? lighten(theme.palette.background.default, 0.4)
+								: lighten(theme.palette.background.default, 0.02)
+					}}
+					component="label"
+					htmlFor="button-file"
+					className="productImageUpload flex items-center justify-center relative w-128 h-128 rounded-16 mx-12 mb-24 overflow-hidden cursor-pointer shadow hover:shadow-lg"
+				>
+					<input
+						accept="image/*"
+						className="hidden"
+						id="button-file"
+						type="file"
+						disabled={isUploading}
+						onChange={async (e) => {
+							const file = e?.target?.files?.[0];
+							if (!file) return;
 
-											reader.onload = () => {
-												resolve({
-													id: FuseUtils.generateGUID(),
-													url: `data:${file.type};base64,${btoa(reader.result as string)}`,
-													type: 'image'
-												});
-											};
+							setIsUploading(true);
+							try {
+								const formData = new FormData();
+								formData.append('file', file);
+								const token = localStorage.getItem('jwt_access_token');
+								const uploadRes = await fetch('/api/files/upload?folder=products', {
+									method: 'POST',
+									headers: token ? { Authorization: `Bearer ${token}` } : {},
+									body: formData
+								});
 
-											reader.onerror = reject;
+								if (!uploadRes.ok) {
+									throw new Error(`Upload failed with status ${uploadRes.status}`);
+								}
 
-											reader.readAsBinaryString(file);
-										});
+								const uploadData = await uploadRes.json();
+								const uploadedUrl = uploadData.url;
+
+								if (productId && productId !== 'new') {
+									const addImgRes = await fetch(`/api/products/${productId}/images`, {
+										method: 'POST',
+										headers: {
+											'Content-Type': 'application/json',
+											...(token ? { Authorization: `Bearer ${token}` } : {})
+										},
+										body: JSON.stringify({
+											imageUrl: uploadedUrl,
+											altText: 'Product image',
+											isMain: !images || images.length === 0
+										})
+									});
+
+									if (addImgRes.ok) {
+										const newImgDto = await addImgRes.json();
+										const newImg = {
+											id: newImgDto.id,
+											url: newImgDto.url,
+											type: 'image',
+											isMain: newImgDto.isMain
+										};
+										const updated = [...images, newImg];
+										setValue('images', updated, { shouldDirty: true, shouldValidate: true });
+										if (newImgDto.isMain || !featuredImageId) {
+											setValue('featuredImageId', newImgDto.id, { shouldDirty: true });
+										}
 									}
-
-									const newImage = await readFileAsync();
-
-									onChange([...(value as EcommerceProduct['images'] || []), newImage]);
-								}}
-							/>
-							<FuseSvgIcon
-								size={32}
-								color="action"
-							>
-								heroicons-outline:upload
-							</FuseSvgIcon>
-						</Box>
+								} else {
+									const newImg = {
+										id: FuseUtils.generateGUID(),
+										url: uploadedUrl,
+										type: 'image'
+									};
+									const updated = [...images, newImg];
+									setValue('images', updated, { shouldDirty: true, shouldValidate: true });
+									if (!featuredImageId) {
+										setValue('featuredImageId', newImg.id, { shouldDirty: true });
+									}
+								}
+							} catch (err) {
+								console.error('Image upload failed:', err);
+							} finally {
+								setIsUploading(false);
+								e.target.value = '';
+							}
+						}}
+					/>
+					{isUploading ? (
+						<CircularProgress size={32} />
+					) : (
+						<FuseSvgIcon size={32} color="action">
+							heroicons-outline:upload
+						</FuseSvgIcon>
 					)}
-				/>
-				
+				</Box>
+
 				<DragDropContext onDragEnd={onDragEnd}>
 					<StrictModeDroppable droppableId="product-images" direction="horizontal">
 						{(provided) => (
@@ -182,6 +265,16 @@ function ProductImagesTab() {
 																	snapshot.isDragging && 'shadow-xl'
 																)}
 															>
+																<IconButton
+																	size="small"
+																	className="productImageDelete"
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		handleDeleteImage(media.id);
+																	}}
+																>
+																	<FuseSvgIcon size={16}>heroicons-outline:trash</FuseSvgIcon>
+																</IconButton>
 																<FuseSvgIcon className="productImageFeaturedStar">
 																	heroicons-solid:star
 																</FuseSvgIcon>

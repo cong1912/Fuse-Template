@@ -11,15 +11,94 @@ import {
 import settingsConfig from 'app/configs/settingsConfig';
 import themeLayoutConfigs from 'app/theme-layouts/themeLayoutConfigs';
 import { resetUser, setUser, setUserSettings } from 'src/app/auth/user/store/userSlice';
-import { darkPaletteText, lightPaletteText } from 'app/configs/themesConfig';
+import { darkPaletteText, lightPaletteText, themesConfig } from 'app/configs/themesConfig';
 import { AppThunk, RootStateType } from 'app/store/types';
-import { FuseSettingsConfigType, FuseThemesType, FuseThemeType } from '@fuse/core/FuseSettings/FuseSettings';
+import { FuseSettingsConfigType, FuseThemesType, FuseThemeType, ThemeModeType } from '@fuse/core/FuseSettings/FuseSettings';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
 import { PartialDeep } from 'type-fest';
-import { appSelector } from 'app/store/store';
 import { showMessage } from '@fuse/core/FuseMessage/store/fuseMessageSlice';
 
+export type { ThemeModeType };
+
 type AppRootStateType = RootStateType<settingsSliceType>;
+
+export function getSavedThemeMode(): ThemeModeType {
+	if (typeof window === 'undefined') return 'system';
+	return (localStorage.getItem('fuse_theme_mode') as ThemeModeType) || 'system';
+}
+
+export function isSystemDark(): boolean {
+	if (typeof window === 'undefined') return false;
+	return Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+export function resolveEffectiveMode(mode: ThemeModeType = 'system'): 'light' | 'dark' {
+	if (mode === 'system') {
+		return isSystemDark() ? 'dark' : 'light';
+	}
+	return mode;
+}
+
+export const setThemeMode =
+	(mode: ThemeModeType): AppThunk<void> =>
+	(dispatch, getState) => {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('fuse_theme_mode', mode);
+		}
+
+		const effective = resolveEffectiveMode(mode);
+		const root = typeof document !== 'undefined' ? document.documentElement : null;
+		if (root) {
+			if (effective === 'dark') {
+				root.classList.add('dark');
+				root.classList.remove('light');
+				root.style.colorScheme = 'dark';
+				document.body.classList.add('dark');
+				document.body.classList.remove('light');
+			} else {
+				root.classList.remove('dark');
+				root.classList.add('light');
+				root.style.colorScheme = 'light';
+				document.body.classList.add('light');
+				document.body.classList.remove('dark');
+			}
+		}
+
+		const AppState = getState() as AppRootStateType;
+		const settings = AppState.fuseSettings;
+
+		const targetTheme =
+			effective === 'dark'
+				? {
+						main: themesConfig.defaultDark,
+						navbar: themesConfig.defaultDark,
+						toolbar: themesConfig.defaultDark,
+						footer: themesConfig.defaultDark
+				  }
+				: {
+						main: themesConfig.default,
+						navbar: themesConfig.defaultDark,
+						toolbar: themesConfig.default,
+						footer: themesConfig.defaultDark
+				  };
+
+		const newSettings: FuseSettingsConfigType = {
+			...settings.current,
+			themeMode: mode,
+			theme: targetTheme
+		};
+
+		dispatch(setSettings(newSettings));
+		dispatch(setDefaultSettings(newSettings));
+	};
+
+export const syncSystemTheme = (): AppThunk<void> => (dispatch, getState) => {
+	const AppState = getState() as AppRootStateType;
+	const currentMode = AppState.fuseSettings.current.themeMode || getSavedThemeMode();
+	if (currentMode === 'system') {
+		dispatch(setThemeMode('system'));
+	}
+};
 
 export const changeFuseTheme =
 	(theme: FuseThemesType): AppThunk<void> =>
@@ -61,7 +140,34 @@ function getInitialSettings(): FuseSettingsConfigType {
 		config: themeLayoutConfigs[defaultLayoutStyle].defaults
 	};
 
-	return _.merge({}, defaultSettings, { layout }, settingsConfig, getParsedQuerySettings());
+	const initial: FuseSettingsConfigType = _.merge(
+		{},
+		defaultSettings,
+		{ layout },
+		settingsConfig,
+		getParsedQuerySettings()
+	);
+	const savedMode = getSavedThemeMode();
+	const effective = resolveEffectiveMode(savedMode);
+
+	initial.themeMode = savedMode;
+	if (effective === 'dark') {
+		initial.theme = {
+			main: themesConfig.defaultDark,
+			navbar: themesConfig.defaultDark,
+			toolbar: themesConfig.defaultDark,
+			footer: themesConfig.defaultDark
+		};
+	} else {
+		initial.theme = {
+			main: themesConfig.default,
+			navbar: themesConfig.defaultDark,
+			toolbar: themesConfig.default,
+			footer: themesConfig.defaultDark
+		};
+	}
+
+	return initial;
 }
 
 /**
@@ -71,12 +177,23 @@ export function generateSettings(
 	_defaultSettings: PartialDeep<FuseSettingsConfigType>,
 	_newSettings: FuseSettingsConfigType
 ) {
-	return _.merge(
+	const res = _.merge(
 		{},
 		_defaultSettings,
 		{ layout: { config: themeLayoutConfigs[_newSettings?.layout?.style]?.defaults } },
 		_newSettings
 	);
+
+	if (_newSettings?.theme) {
+		res.theme = {
+			main: _newSettings.theme.main,
+			navbar: _newSettings.theme.navbar,
+			toolbar: _newSettings.theme.toolbar,
+			footer: _newSettings.theme.footer
+		};
+	}
+
+	return res;
 }
 
 const initialSettings = getInitialSettings();
@@ -170,11 +287,11 @@ export const fuseSettingsSlice = createSlice({
 
 type directionType = 'ltr' | 'rtl';
 
-const getDirection = appSelector((state: AppRootStateType) => state.fuseSettings.current.direction);
-const getMainTheme = appSelector((state: AppRootStateType) => state.fuseSettings.current.theme.main);
-const getNavbarTheme = appSelector((state: AppRootStateType) => state.fuseSettings.current.theme.navbar);
-const getToolbarTheme = appSelector((state: AppRootStateType) => state.fuseSettings.current.theme.toolbar);
-const getFooterTheme = appSelector((state: AppRootStateType) => state.fuseSettings.current.theme.footer);
+const getDirection = (state: AppRootStateType) => state?.fuseSettings?.current?.direction;
+const getMainTheme = (state: AppRootStateType) => state?.fuseSettings?.current?.theme?.main;
+const getNavbarTheme = (state: AppRootStateType) => state?.fuseSettings?.current?.theme?.navbar;
+const getToolbarTheme = (state: AppRootStateType) => state?.fuseSettings?.current?.theme?.toolbar;
+const getFooterTheme = (state: AppRootStateType) => state?.fuseSettings?.current?.theme?.footer;
 
 /**
  * Generates the MUI theme object.
@@ -280,17 +397,20 @@ export const selectFooterThemeLight = createSelector([getFooterTheme, getDirecti
 	generateMuiTheme(changeThemeMode(theme, 'light'), direction)
 );
 
-export const selectFuseCurrentSettings = appSelector((state: AppRootStateType) => state.fuseSettings.current);
+export const selectFuseCurrentSettings = (state: AppRootStateType) => state?.fuseSettings?.current;
 
-export const selectFuseCurrentLayoutConfig = appSelector(
-	(state: AppRootStateType) => state.fuseSettings.current.layout.config
-);
+export const selectFuseCurrentLayoutConfig = (state: AppRootStateType) =>
+	state?.fuseSettings?.current?.layout?.config;
 
-export const selectFuseDefaultSettings = appSelector((state: AppRootStateType) => state.fuseSettings.defaults);
+export const selectFuseDefaultSettings = (state: AppRootStateType) => state?.fuseSettings?.defaults;
 
-export const selectCustomScrollbarsEnabled = appSelector(
-	(state: AppRootStateType) => state.fuseSettings.current.customScrollbars
-);
+export const selectCustomScrollbarsEnabled = (state: AppRootStateType) =>
+	state?.fuseSettings?.current?.customScrollbars;
+
+export const selectThemeMode = (state: AppRootStateType) =>
+	state?.fuseSettings?.current?.themeMode || getSavedThemeMode();
+
+export const selectEffectiveThemeMode = createSelector([selectThemeMode], (mode) => resolveEffectiveMode(mode));
 
 // export const selectFuseThemesSettings = (state: RootState) => state.fuseSettings.themes;
 

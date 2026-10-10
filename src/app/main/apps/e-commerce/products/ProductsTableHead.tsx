@@ -85,13 +85,73 @@ type ProductsTableHeadPropsType = {
 	};
 	rowCount: number;
 	onMenuItemClick: () => void;
+	isSuperAdmin?: boolean;
 };
 
 /**
  * The products table head component.
  */
 function ProductsTableHead(props: ProductsTableHeadPropsType) {
-	const { selectedProductIds, tableOrder, onSelectAllClick, onRequestSort, rowCount, onMenuItemClick } = props;
+	const { selectedProductIds, tableOrder, onSelectAllClick, onRequestSort, rowCount, onMenuItemClick, isSuperAdmin } = props;
+
+	const tableRows: rowType[] = [
+		{
+			id: 'image',
+			align: 'left',
+			disablePadding: true,
+			label: '',
+			sort: false
+		},
+		{
+			id: 'name',
+			align: 'left',
+			disablePadding: false,
+			label: 'Tên sản phẩm',
+			sort: true
+		},
+		...(isSuperAdmin ? [{
+			id: 'tenantName',
+			align: 'left' as const,
+			disablePadding: false,
+			label: 'Gian hàng (Tenant)',
+			sort: true
+		}] : []),
+		{
+			id: 'productType',
+			align: 'center',
+			disablePadding: false,
+			label: 'Loại SP',
+			sort: true
+		},
+		{
+			id: 'categories',
+			align: 'left',
+			disablePadding: false,
+			label: 'Danh mục',
+			sort: true
+		},
+		{
+			id: 'priceTaxIncl',
+			align: 'right',
+			disablePadding: false,
+			label: 'Giá',
+			sort: true
+		},
+		{
+			id: 'quantity',
+			align: 'right',
+			disablePadding: false,
+			label: 'Tồn kho',
+			sort: true
+		},
+		{
+			id: 'active',
+			align: 'right',
+			disablePadding: false,
+			label: 'Trạng thái',
+			sort: true
+		}
+	];
 
 	const [removeProducts] = useDeleteECommerceProductsMutation();
 
@@ -167,7 +227,7 @@ function ProductsTableHead(props: ProductsTableHeadPropsType) {
 						</Box>
 					)}
 				</TableCell>
-				{rows.map((row) => {
+				{tableRows.map((row) => {
 					return (
 						<TableCell
 							sx={{

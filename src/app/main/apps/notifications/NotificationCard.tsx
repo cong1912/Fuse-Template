@@ -85,7 +85,14 @@ function NotificationCard(props: NotificationCardProps) {
 						className="mt-8 text-sm leading-none "
 						color="text.secondary"
 					>
-						{formatDistanceToNow(new Date(item.time), { addSuffix: true })}
+						{(() => {
+							try {
+								const d = new Date(item.time);
+								return !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : item.time;
+							} catch {
+								return item.time;
+							}
+						})()}
 					</Typography>
 				)}
 			</div>

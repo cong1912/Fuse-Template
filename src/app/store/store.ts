@@ -1,5 +1,6 @@
 import i18n from 'app/store/i18nSlice';
 import apiService from 'app/store/apiService';
+import fuseSettings from '@fuse/core/FuseSettings/store/fuseSettingsSlice';
 import {
 	ReducersMapObject,
 	configureStore,
@@ -41,6 +42,7 @@ export interface LazyLoadedSlices {}
  */
 const staticReducers: ReducersMapObject = {
 	i18n,
+	fuseSettings,
 	[apiService.reducerPath]: apiService.reducer
 };
 

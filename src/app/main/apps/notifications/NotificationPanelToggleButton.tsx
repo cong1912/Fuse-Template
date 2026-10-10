@@ -23,6 +23,8 @@ function NotificationPanelToggleButton(props: NotificationPanelToggleButtonProps
 
 	return (
 		<IconButton
+			id="notification-panel-toggle-btn"
+			aria-label="notifications"
 			className="h-40 w-40"
 			onClick={() => dispatch(toggleNotificationPanel())}
 			size="large"

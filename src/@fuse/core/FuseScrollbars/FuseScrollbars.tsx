@@ -7,8 +7,10 @@ import history from '@history';
 import { selectCustomScrollbarsEnabled } from '@fuse/core/FuseSettings/store/fuseSettingsSlice';
 import { useSelector } from 'react-redux';
 
-const Root = styled('div')(() => ({
-	overscrollBehavior: 'contain',
+const Root = styled('div')<{ customEnabled?: boolean }>(({ customEnabled }) => ({
+	...(customEnabled && {
+		overscrollBehavior: 'contain'
+	}),
 	minHeight: '100%'
 }));
 
@@ -144,6 +146,7 @@ const FuseScrollbars = forwardRef<HTMLDivElement, FuseScrollbarsProps>((props, r
 			id={id}
 			className={className}
 			style={style}
+			customEnabled={Boolean(customScrollbars && enable && !isMobile)}
 			ref={(el) => {
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore

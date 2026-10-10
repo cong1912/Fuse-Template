@@ -97,8 +97,22 @@ function FuseTheme(props: FuseThemeProps) {
 	}, [direction]);
 
 	useEffect(() => {
-		document.body.classList.add(mode === 'light' ? 'light' : 'dark');
-		document.body.classList.remove(mode === 'light' ? 'dark' : 'light');
+		const root = document.documentElement;
+		const isDark = mode === 'dark';
+
+		if (isDark) {
+			root.classList.add('dark');
+			root.classList.remove('light');
+			root.style.colorScheme = 'dark';
+			document.body.classList.add('dark');
+			document.body.classList.remove('light');
+		} else {
+			root.classList.remove('dark');
+			root.classList.add('light');
+			root.style.colorScheme = 'light';
+			document.body.classList.add('light');
+			document.body.classList.remove('dark');
+		}
 	}, [mode]);
 
 	// console.warn('FuseTheme:: rendered',mainTheme);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
-import axios from 'axios';
+import axiosClient from 'app/api/axiosClient';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -15,7 +15,7 @@ const ProductClasses = () => {
     useEffect(() => {
         const fetchProductClasses = async () => {
             try {
-                const response = await axios.get('/api/admin/product-classes');
+                const response = await axiosClient.get('/api/admin/product-classes');
                 setRows(response.data);
             } catch (error) {
                 // Fallback to mock data if 404 or any other error

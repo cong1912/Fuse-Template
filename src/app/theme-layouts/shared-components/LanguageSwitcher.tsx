@@ -84,15 +84,6 @@ function LanguageSwitcher() {
 						<ListItemText primary={lng.title} />
 					</MenuItem>
 				))}
-
-				<MenuItem
-					component={Link}
-					to="/documentation/configuration/multi-language"
-					onClick={langMenuClose}
-					role="button"
-				>
-					<ListItemText primary="Learn More" />
-				</MenuItem>
 			</Popover>
 		</>
 	);

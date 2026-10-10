@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { useState, useEffect, useCallback } from 'react';
 import { AxiosError, AxiosResponse } from 'axios';
 import axios from 'app/api/axiosClient';
@@ -27,7 +27,7 @@ export const mapRoleToFuseRoles = (role: unknown): string[] => {
 
 	if (Array.isArray(role)) {
 		const mapped = role.flatMap((r) => mapRoleToFuseRoles(r));
-		return mapped.length > 0 ? mapped : ['admin'];
+		return mapped.length > 0 ? Array.from(new Set(mapped)) : ['admin'];
 	}
 
 	if (typeof role === 'string') {
@@ -36,12 +36,15 @@ export const mapRoleToFuseRoles = (role: unknown): string[] => {
 			case 'admin':
 			case 'administrator':
 			case 'superadmin':
+				return ['superadmin', 'admin'];
 			case 'owner':
 				return ['admin'];
 			case 'staff':
 			case 'manager':
 			case 'vendor':
 			case 'employee':
+			case 'warehousestaff':
+			case 'salesstaff':
 				return ['staff'];
 			case 'user':
 			case 'customer':
@@ -127,6 +130,35 @@ export const mapUserData = (rawUser: any, fallbackEmail?: string, fallbackUid?: 
 
 	const photoURL = rawUser?.photoURL || rawUser?.avatar || rawUser?.avatarUrl || rawUser?.data?.photoURL || '';
 
+	let localShortcuts: string[] = [];
+	try {
+		const stored = typeof window !== 'undefined' ? localStorage.getItem('user_shortcuts') : null;
+		if (stored) {
+			const parsed = JSON.parse(stored);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				localShortcuts = parsed;
+			}
+		}
+	} catch {
+		// ignore
+	}
+
+	const rawShortcuts = rawUser?.data?.shortcuts || rawUser?.shortcuts;
+	const shortcuts =
+		Array.isArray(rawShortcuts) && rawShortcuts.length > 0
+			? rawShortcuts
+			: localShortcuts.length > 0
+				? localShortcuts
+				: ['orders', 'products', 'revenue', 'domain-settings'];
+
+	try {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('user_shortcuts', JSON.stringify(shortcuts));
+		}
+	} catch {
+		// ignore
+	}
+
 	return UserModel({
 		uid: String(uid),
 		role,
@@ -134,7 +166,7 @@ export const mapUserData = (rawUser: any, fallbackEmail?: string, fallbackUid?: 
 			displayName,
 			email,
 			photoURL,
-			shortcuts: rawUser?.data?.shortcuts || rawUser?.shortcuts || [],
+			shortcuts,
 			settings: rawUser?.data?.settings || rawUser?.settings || {},
 			loginRedirectUrl: rawUser?.data?.loginRedirectUrl || rawUser?.loginRedirectUrl || '/',
 			tenant: rawUser?.tenant || rawUser?.data?.tenant || null,
@@ -477,6 +509,14 @@ const useJwtAuth = <User, SignInPayload, SignUpPayload>(
 	 */
 	const updateUser = useCallback(async (userData: PartialDeep<User>) => {
 		try {
+			if (userData?.data?.shortcuts && Array.isArray(userData.data.shortcuts)) {
+				try {
+					localStorage.setItem('user_shortcuts', JSON.stringify(userData.data.shortcuts));
+				} catch {
+					// ignore
+				}
+			}
+
 			const response: AxiosResponse<User, PartialDeep<User>> = await axios.put(
 				authConfig.updateUserUrl,
 				userData

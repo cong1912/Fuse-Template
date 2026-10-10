@@ -12,11 +12,13 @@ import NavbarToggleButton from 'app/theme-layouts/shared-components/navbar/Navba
 import { selectFuseNavbar } from 'app/theme-layouts/shared-components/navbar/store/navbarSlice';
 import AdjustFontSize from '../../shared-components/AdjustFontSize';
 import FullScreenToggle from '../../shared-components/FullScreenToggle';
+import ThemeModeToggle from '../../shared-components/ThemeModeToggle';
 import LanguageSwitcher from '../../shared-components/LanguageSwitcher';
 import NavigationShortcuts from '../../shared-components/navigation/NavigationShortcuts';
 import NavigationSearch from '../../shared-components/navigation/NavigationSearch';
 import UserMenu from '../../shared-components/UserMenu';
 import QuickPanelToggleButton from '../../shared-components/quickPanel/QuickPanelToggleButton';
+import GlobalAiCopilotButton from '../../shared-components/ai/GlobalAiCopilotButton';
 
 type ToolbarLayout1Props = {
 	className?: string;
@@ -73,9 +75,11 @@ function ToolbarLayout1(props: ToolbarLayout1Props) {
 
 					<div className="flex h-full items-center overflow-x-auto px-8">
 						<LanguageSwitcher />
+						<ThemeModeToggle />
 						<AdjustFontSize />
 						<FullScreenToggle />
 						<NavigationSearch />
+						<GlobalAiCopilotButton />
 						<QuickPanelToggleButton />
 						<NotificationPanelToggleButton />
 						<UserMenu />

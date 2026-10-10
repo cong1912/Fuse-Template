@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootStateType } from 'app/store/types';
-import { appSelector } from 'app/store/store';
 import { ReactElement } from 'react';
 
 type AppRootStateType = RootStateType<messageSliceType>;
@@ -59,9 +58,9 @@ export const fuseMessageSlice = createSlice({
 
 export const { hideMessage, showMessage } = fuseMessageSlice.actions;
 
-export const selectFuseMessageState = appSelector((state: AppRootStateType) => state.fuseMessage.state);
+export const selectFuseMessageState = (state: AppRootStateType) => state?.fuseMessage?.state;
 
-export const selectFuseMessageOptions = appSelector((state: AppRootStateType) => state.fuseMessage.options);
+export const selectFuseMessageOptions = (state: AppRootStateType) => state?.fuseMessage?.options;
 
 export type messageSliceType = typeof fuseMessageSlice;
 

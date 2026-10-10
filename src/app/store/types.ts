@@ -1,5 +1,5 @@
 import { Action, Reducer, ThunkAction, ThunkDispatch, Dispatch, AnyAction } from '@reduxjs/toolkit';
-import { RootState } from './store';
+import type { RootState } from './store';
 
 /**
  * The type of the dispatch function for this application (AppState).

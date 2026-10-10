@@ -65,6 +65,8 @@ export type FuseThemeType = {
 
 export type FuseThemesType = { [key: string]: FuseThemeType };
 
+export type ThemeModeType = 'light' | 'dark' | 'system';
+
 export type FuseSettingsConfigType = {
 	layout: {
 		style?: string;
@@ -72,6 +74,7 @@ export type FuseSettingsConfigType = {
 	};
 	customScrollbars?: boolean;
 	direction: 'rtl' | 'ltr';
+	themeMode?: ThemeModeType;
 	theme: {
 		main: FuseThemeType;
 		navbar: FuseThemeType;

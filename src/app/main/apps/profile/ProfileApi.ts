@@ -9,15 +9,62 @@ const ProfileApi = api
 	.injectEndpoints({
 		endpoints: (build) => ({
 			getProfilePhotosVideos: build.query<any, void>({
-				queryFn: () => ({ data: [] }),
+				queryFn: () => ({
+					data: [
+						{
+							id: '1',
+							name: 'Last Month',
+							info: '12 Photos',
+							media: []
+						}
+					]
+				}),
 				providesTags: ['profile_photos_videos']
 			}),
 			getProfileTimeline: build.query<any, void>({
-				queryFn: () => ({ data: [] }),
+				queryFn: () => ({
+					data: {
+						activities: [
+							{
+								id: '1',
+								user: { name: 'Admin User', avatar: 'assets/images/avatars/male-04.jpg' },
+								message: 'Deployed version 2.4.0 to production',
+								time: '2 hours ago'
+							}
+						],
+						posts: []
+					}
+				}),
 				providesTags: ['profile_timeline']
 			}),
 			getProfileAbout: build.query<any, void>({
-				queryFn: () => ({ data: { general: {}, work: {}, contact: {} } }),
+				queryFn: () => ({
+					data: {
+						general: {
+							gender: 'Male',
+							birthday: 'May 8, 1990',
+							locations: ['London, UK', 'Tokyo, Japan'],
+							about: 'Super administrator for enterprise retail platform.'
+						},
+						work: {
+							occupation: 'Platform Administrator',
+							skills: 'Cloud, Distributed Systems, E-Commerce',
+							jobs: [{ company: 'Enterprise Inc', date: '2020 - Present' }]
+						},
+						contact: {
+							address: '123 Tech Blvd, Suite 400',
+							tel: ['+1 555-0199'],
+							websites: ['https://enterprise.example.com'],
+							emails: ['admin@ecommerce.com']
+						},
+						groups: [
+							{ id: '1', name: 'DevOps & Cloud', category: 'Engineering', members: '43 members' }
+						],
+						friends: [
+							{ id: '1', name: 'John Doe', avatar: 'assets/images/avatars/male-01.jpg' }
+						]
+					}
+				}),
 				providesTags: ['profile_about']
 			})
 		}),

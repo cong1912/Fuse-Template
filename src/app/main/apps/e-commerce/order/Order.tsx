@@ -139,7 +139,7 @@ function Order() {
 					</Tabs>
 					{order && (
 						<div className="p-16 sm:p-24 max-w-3xl w-full">
-							{tabValue === 0 && <OrderDetailsTab />}
+							{tabValue === 0 && <OrderDetailsTab order={order} />}
 							{tabValue === 1 && <ProductsTab />}
 							{tabValue === 2 && <InvoiceTab order={order} />}
 						</div>

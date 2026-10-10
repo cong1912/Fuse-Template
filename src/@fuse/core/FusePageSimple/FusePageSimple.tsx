@@ -88,10 +88,10 @@ const Root = styled('div')<FusePageSimpleProps>(({ theme, ...props }) => ({
 		flexDirection: 'column',
 		width: '100%',
 		flex: '1 1 auto',
-		overflow: 'hidden',
-
-		//    WebkitOverflowScrolling: 'touch',
-		zIndex: 9999
+		...(props.scroll === 'content' && {
+			overflow: 'hidden',
+			zIndex: 9999
+		})
 	},
 
 	'& .FusePageSimple-toolbar': {
@@ -106,7 +106,9 @@ const Root = styled('div')<FusePageSimpleProps>(({ theme, ...props }) => ({
 		flex: '1 1 auto',
 		alignItems: 'start',
 		minHeight: 0,
-		overflowY: 'auto'
+		...(props.scroll === 'content' && {
+			overflowY: 'auto'
+		})
 	},
 
 	'& .FusePageSimple-sidebarWrapper': {
@@ -287,12 +289,18 @@ const FusePageSimple = forwardRef<
 							{header && <FusePageSimpleHeader header={header} />}
 
 							{content && (
-								<FuseScrollbars
-									enable={scroll === 'content'}
-									className={clsx('FusePageSimple-content container')}
-								>
-									{content}
-								</FuseScrollbars>
+								scroll === 'content' ? (
+									<FuseScrollbars
+										enable
+										className={clsx('FusePageSimple-content container')}
+									>
+										{content}
+									</FuseScrollbars>
+								) : (
+									<div className={clsx('FusePageSimple-content container')}>
+										{content}
+									</div>
+								)
 							)}
 						</div>
 						{rightSidebarContent && (

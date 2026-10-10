@@ -4,6 +4,8 @@ const QuickPanel = lazy(() => import('app/theme-layouts/shared-components/quickP
 
 const NotificationPanel = lazy(() => import('src/app/main/apps/notifications/NotificationPanel'));
 
+const GlobalAiCopilot = lazy(() => import('app/theme-layouts/shared-components/ai/GlobalAiCopilot'));
+
 /**
  * The right side layout 1.
  */
@@ -13,6 +15,8 @@ function RightSideLayout1() {
 			<QuickPanel />
 
 			<NotificationPanel />
+
+			<GlobalAiCopilot />
 		</Suspense>
 	);
 }

@@ -307,7 +307,7 @@ function Error500Page() {
 
 				<Link
 					className="mt-48 block font-normal"
-					to="/apps/dashboards/project"
+					to="/dashboards/analytics"
 				>
 					Back to Dashboard
 				</Link>

@@ -69,7 +69,7 @@ function TimelineTab() {
 
 						<CardContent className="p-0">
 							<List className="p-0">
-								{timeline.activities.map((activity) => (
+								{(timeline?.activities ?? []).map((activity) => (
 									<ActivityItem
 										item={activity}
 										key={activity.id}
@@ -129,7 +129,7 @@ function TimelineTab() {
 						</Box>
 					</Card>
 
-					{timeline.posts.map((post) => (
+					{(timeline?.posts ?? []).map((post) => (
 						<motion.div
 							variants={item}
 							key={post.id}

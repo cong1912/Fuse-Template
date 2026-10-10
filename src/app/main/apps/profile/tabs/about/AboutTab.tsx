@@ -23,7 +23,11 @@ function AboutTab() {
 		return <FuseLoading />;
 	}
 
-	const { general, work, contact, groups, friends } = profile;
+	const general = profile?.general ?? {};
+	const work = profile?.work ?? {};
+	const contact = profile?.contact ?? {};
+	const groups = profile?.groups ?? [];
+	const friends = profile?.friends ?? [];
 
 	const container = {
 		show: {
@@ -72,7 +76,7 @@ function AboutTab() {
 							<div className="mb-24">
 								<Typography className="font-semibold mb-4 text-15">Locations</Typography>
 
-								{general.locations.map((location) => (
+								{(general.locations ?? []).map((location) => (
 									<div
 										className="flex items-center"
 										key={location}
@@ -120,7 +124,7 @@ function AboutTab() {
 								<Typography className="font-semibold mb-4 text-15">Jobs</Typography>
 								<table>
 									<tbody>
-										{work.jobs.map((job) => (
+										{(work.jobs ?? []).map((job) => (
 											<tr key={job.company}>
 												<td>
 													<Typography>{job.company}</Typography>
@@ -154,7 +158,7 @@ function AboutTab() {
 							<div className="mb-24">
 								<Typography className="font-semibold mb-4 text-15">Tel.</Typography>
 
-								{contact.tel.map((tel) => (
+								{(contact.tel ?? []).map((tel) => (
 									<div
 										className="flex items-center"
 										key={tel}
@@ -167,7 +171,7 @@ function AboutTab() {
 							<div className="mb-24">
 								<Typography className="font-semibold mb-4 text-15">Website</Typography>
 
-								{contact.websites.map((website) => (
+								{(contact.websites ?? []).map((website) => (
 									<div
 										className="flex items-center"
 										key={website}
@@ -180,7 +184,7 @@ function AboutTab() {
 							<div className="mb-24">
 								<Typography className="font-semibold mb-4 text-15">Emails</Typography>
 
-								{contact.emails.map((email) => (
+								{(contact.emails ?? []).map((email) => (
 									<div
 										className="flex items-center"
 										key={email}

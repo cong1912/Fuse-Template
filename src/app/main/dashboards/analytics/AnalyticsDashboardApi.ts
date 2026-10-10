@@ -54,6 +54,10 @@ const AnalyticsDashboardApi = api
 						language: { uniqueVisitors: res.totalCustomers, series: [100], labels: ["EN"] }
 					};
 				}
+			}),
+			getOrderStatusSummary: build.query<{ pending?: number; confirmed?: number; processing?: number; shipped?: number; delivered?: number; cancelled?: number; refunded?: number }, void>({
+				query: () => ({ url: `/api/admin/analytics/order-status-summary` }),
+				providesTags: ['analytics_dashboard_widgets']
 			})
 		}),
 		overrideExisting: false
@@ -63,7 +67,7 @@ export default AnalyticsDashboardApi;
 export type GetAnalyticsDashboardWidgetsApiResponse = object;
 export type GetAnalyticsDashboardWidgetsApiArg = void;
 
-export const { useGetAnalyticsDashboardWidgetsQuery } = AnalyticsDashboardApi;
+export const { useGetAnalyticsDashboardWidgetsQuery, useGetOrderStatusSummaryQuery } = AnalyticsDashboardApi;
 
 export type AnalyticsDashboardApiType = {
 	[AnalyticsDashboardApi.reducerPath]: ReturnType<typeof AnalyticsDashboardApi.reducer>;

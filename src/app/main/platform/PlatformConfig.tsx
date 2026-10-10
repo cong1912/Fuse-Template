@@ -10,9 +10,10 @@ const RiskPage = lazy(() => import('./risk/RiskPage'));
 const InvitesPage = lazy(() => import('./invites/InvitesPage'));
 const AuditPage = lazy(() => import('./audit/AuditPage'));
 const SystemPage = lazy(() => import('./system/SystemPage'));
+const DomainsManagementPage = lazy(() => import('./domains/DomainsManagementPage'));
 
 const PlatformConfig = {
-	auth: ['SuperAdmin'],
+	auth: ['admin', 'SuperAdmin'],
 	settings: {
 		layout: {
 			config: {}
@@ -58,6 +59,10 @@ const PlatformConfig = {
 		{
 			path: 'platform/system',
 			element: <SystemPage />
+		},
+		{
+			path: 'platform/domains',
+			element: <DomainsManagementPage />
 		}
 	]
 };

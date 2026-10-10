@@ -92,14 +92,26 @@ type OrdersTableHeadProps = {
 	selectedOrderIds: string[];
 	rowCount: number;
 	onMenuItemClick: () => void;
+	isSuperAdmin?: boolean;
 };
 
 /**
  * The orders table head.
  */
 function OrdersTableHead(props: OrdersTableHeadProps) {
-	const { selectedOrderIds, onRequestSort, onSelectAllClick, tableOrder, rowCount, onMenuItemClick } = props;
+	const { selectedOrderIds, onRequestSort, onSelectAllClick, tableOrder, rowCount, onMenuItemClick, isSuperAdmin } = props;
 	const numSelected = selectedOrderIds.length;
+
+	const tableRows: rowType[] = [
+		{ id: 'id', align: 'left', disablePadding: false, label: 'ID', sort: true },
+		{ id: 'reference', align: 'left', disablePadding: false, label: 'Mã đơn', sort: true },
+		...(isSuperAdmin ? [{ id: 'tenantName', align: 'left' as const, disablePadding: false, label: 'Gian hàng (Tenant)', sort: true }] : []),
+		{ id: 'customer', align: 'left', disablePadding: false, label: 'Khách hàng', sort: true },
+		{ id: 'total', align: 'right', disablePadding: false, label: 'Tổng tiền', sort: true },
+		{ id: 'payment', align: 'left', disablePadding: false, label: 'Thanh toán', sort: true },
+		{ id: 'status', align: 'left', disablePadding: false, label: 'Trạng thái', sort: true },
+		{ id: 'date', align: 'left', disablePadding: false, label: 'Ngày tạo', sort: true }
+	];
 
 	const [selectedOrdersMenu, setSelectedOrdersMenu] = useState<HTMLButtonElement | null>(null);
 
@@ -176,7 +188,7 @@ function OrdersTableHead(props: OrdersTableHeadProps) {
 						</Box>
 					)}
 				</TableCell>
-				{rows.map((row) => {
+				{tableRows.map((row) => {
 					return (
 						<TableCell
 							sx={{

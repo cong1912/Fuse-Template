@@ -31,18 +31,23 @@ export default defineConfig({
 		emptyOutDir: false
 	},
 	server: {
-		open: true,
-		port: 3000,
+		open: false,
+		port: 3001,
 		proxy: {
 			'/api': {
-				target: 'http://localhost:5001',
+				target: 'http://127.0.0.1:5269',
+				changeOrigin: true,
+				secure: false
+			},
+			'/uploads': {
+				target: 'http://127.0.0.1:5269',
 				changeOrigin: true,
 				secure: false
 			}
 		}
 	},
 	define:{
-		global: 'window',
+		global: 'window'
 	},
 	resolve: {
 		alias: {

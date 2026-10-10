@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import authRoles from 'src/app/auth/authRoles';
 
 const AnalyticsDashboardApp = lazy(() => import('./AnalyticsDashboardApp'));
 /**
@@ -10,6 +11,7 @@ const AnalyticsDashboardAppConfig = {
 			config: {}
 		}
 	},
+	auth: authRoles.staff,
 	routes: [
 		{
 			path: 'dashboards/analytics',

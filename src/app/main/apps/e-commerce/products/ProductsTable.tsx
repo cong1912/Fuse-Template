@@ -17,8 +17,17 @@ import { Many } from 'lodash';
 import { WithRouterProps } from '@fuse/core/withRouter/withRouter';
 import * as React from 'react';
 import { useSelector } from 'react-redux';
+import Chip from '@mui/material/Chip';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import Box from '@mui/material/Box';
+import FuseUtils from '@fuse/utils';
 import ProductsTableHead from './ProductsTableHead';
-import { EcommerceProduct, selectFilteredProducts, useGetECommerceProductsQuery } from '../ECommerceApi';
+import { EcommerceProduct, useGetECommerceProductsQuery } from '../ECommerceApi';
+import { selectSearchText } from '../store/searchTextSlice';
+import { selectUser } from 'src/app/auth/user/store/userSlice';
 
 type ProductsTableProps = WithRouterProps & {
 	navigate: (path: string) => void;
@@ -30,8 +39,39 @@ type ProductsTableProps = WithRouterProps & {
 function ProductsTable(props: ProductsTableProps) {
 	const { navigate } = props;
 
-	const { data, isLoading } = useGetECommerceProductsQuery();
-	const products = useSelector(selectFilteredProducts(data));
+	const { data, isLoading, isError } = useGetECommerceProductsQuery();
+	const searchText = useSelector(selectSearchText);
+
+	const user = useSelector(selectUser);
+	const isSuperAdmin = React.useMemo(() => {
+		const u = user as any;
+		const roles = Array.isArray(u?.role) ? u.role : [u?.role];
+		return roles.includes('superadmin') || roles.includes('SuperAdmin') || u?.data?.role === 'superadmin' || u?.data?.email === 'admin@ecommerce.com';
+	}, [user]);
+
+	const [selectedTenant, setSelectedTenant] = useState<string>('all');
+
+	// Extract unique tenants from data for the dropdown filter
+	const tenantsList = React.useMemo(() => {
+		if (!data) return [];
+		const map = new Map<string, string>();
+		data.forEach((p) => {
+			if (p.tenantId) {
+				map.set(p.tenantId, p.tenantName || 'Shop ' + p.tenantId.substring(0, 6));
+			}
+		});
+		return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+	}, [data]);
+
+	const products = React.useMemo(() => {
+		if (!data) return [];
+		let filtered = data;
+		if (selectedTenant !== 'all') {
+			filtered = filtered.filter((p) => p.tenantId === selectedTenant);
+		}
+		if (!searchText || searchText.trim() === '') return filtered;
+		return FuseUtils.filterArrayByString<EcommerceProduct>(filtered, searchText);
+	}, [data, searchText, selectedTenant]);
 
 	const [selected, setSelected] = useState<EcommerceProduct['id'][]>([]);
 
@@ -108,7 +148,20 @@ function ProductsTable(props: ProductsTableProps) {
 		);
 	}
 
-	if (products?.length === 0) {
+	if (isError) {
+		return (
+			<div className="flex flex-col flex-1 items-center justify-center p-24 text-center h-full gap-16">
+				<Typography color="error" variant="h6" sx={{ fontWeight: 700 }}>
+					Không thể tải danh sách sản phẩm
+				</Typography>
+				<Typography color="text.secondary" variant="body2">
+					Đã xảy ra sự cố khi kết nối tới máy chủ (500 Internal Server Error). Vui lòng thử lại sau.
+				</Typography>
+			</div>
+		);
+	}
+
+	if (!products || products.length === 0) {
 		return (
 			<motion.div
 				initial={{ opacity: 0 }}
@@ -127,6 +180,42 @@ function ProductsTable(props: ProductsTableProps) {
 
 	return (
 		<div className="w-full flex flex-col min-h-full">
+			{isSuperAdmin && (
+				<Box sx={{ px: 3, py: 1.5, display: 'flex', alignItems: 'center', gap: 2, bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : '#f8fafc', borderBottom: '1px solid', borderColor: 'divider' }}>
+					<StorefrontIcon color="primary" fontSize="small" />
+					<Typography variant="body2" sx={{ fontWeight: 600 }}>
+						Bộ lọc Gian hàng (Super Admin):
+					</Typography>
+					<FormControl size="small" sx={{ minWidth: 220 }}>
+						<Select
+							value={selectedTenant}
+							onChange={(e) => {
+								setSelectedTenant(e.target.value as string);
+								setPage(0);
+							}}
+							displayEmpty
+							sx={{ bgcolor: 'background.paper', borderRadius: 1.5 }}
+						>
+							<MenuItem value="all">
+								<em>🏢 Tất cả gian hàng ({data?.length || 0} SP)</em>
+							</MenuItem>
+							{tenantsList.map((t) => (
+								<MenuItem key={t.id} value={t.id}>
+									🏪 {t.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+					{selectedTenant !== 'all' && (
+						<Chip 
+							label={`Đang lọc: ${tenantsList.find(t => t.id === selectedTenant)?.name}`} 
+							onDelete={() => setSelectedTenant('all')} 
+							size="small" 
+							color="primary" 
+						/>
+					)}
+				</Box>
+			)}
 			<FuseScrollbars className="grow overflow-x-auto">
 				<Table
 					stickyHeader
@@ -140,6 +229,7 @@ function ProductsTable(props: ProductsTableProps) {
 						onRequestSort={handleRequestSort}
 						rowCount={products.length}
 						onMenuItemClick={handleDeselect}
+						isSuperAdmin={isSuperAdmin}
 					/>
 
 					<TableBody>
@@ -196,6 +286,37 @@ function ProductsTable(props: ProductsTableProps) {
 											scope="row"
 										>
 											{n.name}
+										</TableCell>
+
+										{isSuperAdmin && (
+											<TableCell
+												className="p-4 md:p-16"
+												component="th"
+												scope="row"
+											>
+												<Chip
+													size="small"
+													icon={<StorefrontIcon fontSize="small" />}
+													label={n.tenantName || 'Shop Mặc định'}
+													color="primary"
+													variant="outlined"
+													sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+												/>
+											</TableCell>
+										)}
+
+										<TableCell
+											className="p-4 md:p-16 text-center"
+											component="th"
+											scope="row"
+										>
+											{n.productType === 'Digital' ? (
+												<Chip size="small" label="📄 File / PDF" color="secondary" sx={{ fontWeight: 600, fontSize: '0.75rem' }} />
+											) : n.productType === 'SerialKey' ? (
+												<Chip size="small" label="🔑 Tài khoản / Key" color="warning" sx={{ fontWeight: 600, fontSize: '0.75rem' }} />
+											) : (
+												<Chip size="small" label="📦 Vật lý" color="default" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.75rem' }} />
+											)}
 										</TableCell>
 
 										<TableCell

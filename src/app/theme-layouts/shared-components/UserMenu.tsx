@@ -122,25 +122,23 @@ function UserMenu() {
 					<>
 						<MenuItem
 							component={Link}
-							to="/apps/profile"
+							to="/account/profile"
 							onClick={userMenuClose}
-							role="button"
 						>
 							<ListItemIcon className="min-w-40">
 								<FuseSvgIcon>heroicons-outline:user-circle</FuseSvgIcon>
 							</ListItemIcon>
-							<ListItemText primary="My Profile" />
+							<ListItemText primary="Hồ sơ của tôi" secondary="Tài khoản & Gian hàng" />
 						</MenuItem>
 						<MenuItem
 							component={Link}
-							to="/apps/mailbox"
+							to="/apps/inbox"
 							onClick={userMenuClose}
-							role="button"
 						>
 							<ListItemIcon className="min-w-40">
-								<FuseSvgIcon>heroicons-outline:mail-open</FuseSvgIcon>
+								<FuseSvgIcon>heroicons-outline:chat-alt-2</FuseSvgIcon>
 							</ListItemIcon>
-							<ListItemText primary="Inbox" />
+							<ListItemText primary="Hộp thư & Hỗ trợ" secondary="Chat với Super Admin & Báo lỗi" />
 						</MenuItem>
 						<MenuItem
 							onClick={() => {
@@ -150,7 +148,7 @@ function UserMenu() {
 							<ListItemIcon className="min-w-40">
 								<FuseSvgIcon>heroicons-outline:logout</FuseSvgIcon>
 							</ListItemIcon>
-							<ListItemText primary="Sign out" />
+							<ListItemText primary="Đăng xuất" />
 						</MenuItem>
 					</>
 				)}

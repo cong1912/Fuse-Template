@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { appSelector } from 'app/store/store';
 import { AppRootStateType } from '.';
 
 const initialState = '';
@@ -27,7 +26,7 @@ export const { setSearchText, resetSearchText } = searchTextSlice.actions;
 
 export type searchTextSliceType = typeof searchTextSlice;
 
-export const selectSearchText = appSelector((state: AppRootStateType) => state.eCommerceApp?.searchText);
+export const selectSearchText = (state: AppRootStateType) => state?.eCommerceApp?.searchText || '';
 
 const searchTextReducer = searchTextSlice.reducer;
 

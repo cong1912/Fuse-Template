@@ -15,9 +15,18 @@ import { WithRouterProps } from '@fuse/core/withRouter/withRouter';
 import { Many } from 'lodash';
 import * as React from 'react';
 import { useSelector } from 'react-redux';
+import Chip from '@mui/material/Chip';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import Box from '@mui/material/Box';
+import FuseUtils from '@fuse/utils';
 import OrdersStatus from '../order/OrdersStatus';
 import OrdersTableHead from './OrdersTableHead';
-import { EcommerceOrder, selectFilteredOrders, useGetECommerceOrdersQuery } from '../ECommerceApi';
+import { EcommerceOrder, useGetECommerceOrdersQuery } from '../ECommerceApi';
+import { selectSearchText } from '../store/searchTextSlice';
+import { selectUser } from 'src/app/auth/user/store/userSlice';
 
 type OrdersTableProps = WithRouterProps & {
 	navigate: (path: string) => void;
@@ -29,9 +38,39 @@ type OrdersTableProps = WithRouterProps & {
 function OrdersTable(props: OrdersTableProps) {
 	const { navigate } = props;
 
-	const { data, isLoading } = useGetECommerceOrdersQuery();
+	const { data, isLoading, isError } = useGetECommerceOrdersQuery();
+	const searchText = useSelector(selectSearchText);
 
-	const orders = useSelector(selectFilteredOrders(data));
+	const user = useSelector(selectUser);
+	const isSuperAdmin = React.useMemo(() => {
+		const u = user as any;
+		const roles = Array.isArray(u?.role) ? u.role : [u?.role];
+		return roles.includes('superadmin') || roles.includes('SuperAdmin') || u?.data?.role === 'superadmin' || u?.data?.email === 'admin@ecommerce.com';
+	}, [user]);
+
+	const [selectedTenant, setSelectedTenant] = useState<string>('all');
+
+	// Extract unique tenants from data for the dropdown filter
+	const tenantsList = React.useMemo(() => {
+		if (!data) return [];
+		const map = new Map<string, string>();
+		data.forEach((o) => {
+			if (o.tenantId) {
+				map.set(o.tenantId, o.tenantName || 'Shop ' + o.tenantId.substring(0, 6));
+			}
+		});
+		return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+	}, [data]);
+
+	const orders = React.useMemo(() => {
+		if (!data) return [];
+		let filtered = data;
+		if (selectedTenant !== 'all') {
+			filtered = filtered.filter((o) => o.tenantId === selectedTenant);
+		}
+		if (!searchText || searchText.trim() === '') return filtered;
+		return FuseUtils.filterArrayByString<EcommerceOrder>(filtered, searchText);
+	}, [data, searchText, selectedTenant]);
 
 	const [selected, setSelected] = useState<string[]>([]);
 
@@ -104,7 +143,20 @@ function OrdersTable(props: OrdersTableProps) {
 		return <FuseLoading />;
 	}
 
-	if (orders.length === 0) {
+	if (isError) {
+		return (
+			<div className="flex flex-col flex-1 items-center justify-center p-24 text-center h-full gap-16">
+				<Typography color="error" variant="h6" sx={{ fontWeight: 700 }}>
+					Không thể tải danh sách đơn hàng
+				</Typography>
+				<Typography color="text.secondary" variant="body2">
+					Đã xảy ra sự cố khi kết nối tới máy chủ (500 Internal Server Error). Vui lòng thử lại sau.
+				</Typography>
+			</div>
+		);
+	}
+
+	if (!orders || orders.length === 0) {
 		return (
 			<motion.div
 				initial={{ opacity: 0 }}
@@ -123,6 +175,42 @@ function OrdersTable(props: OrdersTableProps) {
 
 	return (
 		<div className="w-full flex flex-col min-h-full">
+			{isSuperAdmin && (
+				<Box sx={{ px: 3, py: 1.5, display: 'flex', alignItems: 'center', gap: 2, bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : '#f8fafc', borderBottom: '1px solid', borderColor: 'divider' }}>
+					<StorefrontIcon color="primary" fontSize="small" />
+					<Typography variant="body2" sx={{ fontWeight: 600 }}>
+						Bộ lọc Gian hàng (Super Admin):
+					</Typography>
+					<FormControl size="small" sx={{ minWidth: 220 }}>
+						<Select
+							value={selectedTenant}
+							onChange={(e) => {
+								setSelectedTenant(e.target.value as string);
+								setPage(0);
+							}}
+							displayEmpty
+							sx={{ bgcolor: 'background.paper', borderRadius: 1.5 }}
+						>
+							<MenuItem value="all">
+								<em>🏢 Tất cả gian hàng ({data?.length || 0} Đơn)</em>
+							</MenuItem>
+							{tenantsList.map((t) => (
+								<MenuItem key={t.id} value={t.id}>
+									🏪 {t.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+					{selectedTenant !== 'all' && (
+						<Chip 
+							label={`Đang lọc: ${tenantsList.find(t => t.id === selectedTenant)?.name}`} 
+							onDelete={() => setSelectedTenant('all')} 
+							size="small" 
+							color="primary" 
+						/>
+					)}
+				</Box>
+			)}
 			<FuseScrollbars className="grow overflow-x-auto">
 				<Table
 					stickyHeader
@@ -136,6 +224,7 @@ function OrdersTable(props: OrdersTableProps) {
 						onRequestSort={handleRequestSort}
 						rowCount={orders.length}
 						onMenuItemClick={handleDeselect}
+						isSuperAdmin={isSuperAdmin}
 					/>
 
 					<TableBody>
@@ -204,6 +293,23 @@ function OrdersTable(props: OrdersTableProps) {
 										>
 											{n.reference}
 										</TableCell>
+
+										{isSuperAdmin && (
+											<TableCell
+												className="p-4 md:p-16"
+												component="th"
+												scope="row"
+											>
+												<Chip
+													size="small"
+													icon={<StorefrontIcon fontSize="small" />}
+													label={n.tenantName || 'Shop Mặc định'}
+													color="primary"
+													variant="outlined"
+													sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+												/>
+											</TableCell>
+										)}
 
 										<TableCell
 											className="p-4 md:p-16 truncate"

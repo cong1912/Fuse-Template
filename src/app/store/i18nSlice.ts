@@ -55,8 +55,7 @@ export const i18nSlice = createSlice({
 		language: i18n.options.lng,
 		languages: [
 			{ id: 'en', title: 'English', flag: 'US' },
-			{ id: 'tr', title: 'Turkish', flag: 'TR' },
-			{ id: 'ar', title: 'Arabic', flag: 'SA' }
+			{ id: 'vi', title: 'Tiếng Việt', flag: 'VN' }
 		]
 	} as I18nState,
 	reducers: {
@@ -78,7 +77,7 @@ export const selectCurrentLanguageDirection = createSelector([selectCurrentLangu
 );
 
 export const selectCurrentLanguage = createSelector([selectCurrentLanguageId, selectLanguages], (id, languages) =>
-	languages.find((lng) => lng.id === id)
+	languages.find((lng) => lng.id === id) || languages[0]
 );
 
 export type i18nSliceType = typeof i18nSlice;

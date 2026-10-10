@@ -8,6 +8,9 @@ const Order = lazy(() => import('./order/Order'));
 const Orders = lazy(() => import('./orders/Orders'));
 const Categories = lazy(() => import('./categories/Categories'));
 const ProductClasses = lazy(() => import('./product-classes/ProductClasses'));
+const FlashSaleWaitingRoomPage = lazy(() => import('./flash-sales/FlashSaleWaitingRoomPage'));
+const B2BQuotesPage = lazy(() => import('./b2b/B2BQuotesPage'));
+const PromotionsHubPage = lazy(() => import('./promotions/PromotionsHubPage'));
 
 /**
  * The E-Commerce app configuration.
@@ -48,6 +51,18 @@ const ECommerceAppConfig = {
 				{
 					path: 'orders/:orderId',
 					element: <Order />
+				},
+				{
+					path: 'flash-sales',
+					element: <FlashSaleWaitingRoomPage />
+				},
+				{
+					path: 'promotions',
+					element: <PromotionsHubPage />
+				},
+				{
+					path: 'b2b',
+					element: <B2BQuotesPage />
 				}
 			]
 		}

@@ -37,7 +37,10 @@ function NavbarWrapperLayout1() {
 	const navbarTheme = useSelector(selectNavbarTheme);
 
 	return (
-		<>
+		<div
+			className="flex flex-col shrink-0 min-h-full h-full"
+			style={{ backgroundColor: navbarTheme?.palette?.background?.default || '#111827' }}
+		>
 			<ThemeProvider theme={navbarTheme}>
 				<>
 					{config.navbar.style === 'style-1' && <NavbarStyle1 />}
@@ -47,7 +50,7 @@ function NavbarWrapperLayout1() {
 				</>
 			</ThemeProvider>
 			{config.navbar.display && !config.toolbar.display && !navbar.open && <NavbarToggleFabLayout1 />}
-		</>
+		</div>
 	);
 }
 

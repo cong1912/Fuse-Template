@@ -159,13 +159,24 @@ class FuseNavigationHelper {
 		 * Check if user has grants
 		 */
 		if (userRole && Array.isArray(authArr) && Array.isArray(userRole)) {
-			return authArr.some((r: string) => userRole.indexOf(r) >= 0);
+			return authArr.some((r: string) =>
+				userRole.some((ur: string) => String(ur).toLowerCase() === String(r).toLowerCase())
+			);
 		}
 
-		/*
-            Check if user role is string,
-            */
-		return authArr.includes(userRole as string);
+		if (userRole && Array.isArray(authArr) && typeof userRole === 'string') {
+			return authArr.some((r: string) => String(r).toLowerCase() === String(userRole).toLowerCase());
+		}
+
+		if (userRole && typeof authArr === 'string' && Array.isArray(userRole)) {
+			return userRole.some((ur: string) => String(ur).toLowerCase() === String(authArr).toLowerCase());
+		}
+
+		if (userRole && typeof authArr === 'string' && typeof userRole === 'string') {
+			return String(authArr).toLowerCase() === String(userRole).toLowerCase();
+		}
+
+		return false;
 	}
 
 	static flattenNavigation(navigation: FuseNavItemType[], parentOrder: string = ''): FuseFlatNavItemType[] {

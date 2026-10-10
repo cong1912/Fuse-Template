@@ -21,6 +21,7 @@ const StyledNavBar = styled('div')<StyledNavBarProps>(({ theme, open, position }
 	minWidth: navbarWidth,
 	width: navbarWidth,
 	maxWidth: navbarWidth,
+	backgroundColor: theme.palette.background.default,
 	...(!open && {
 		transition: theme.transitions.create('margin', {
 			easing: theme.transitions.easing.easeOut,

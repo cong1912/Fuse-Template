@@ -11,6 +11,7 @@ import NotificationPanelToggleButton from 'src/app/main/apps/notifications/Notif
 import NavbarToggleButton from 'app/theme-layouts/shared-components/navbar/NavbarToggleButton';
 import AdjustFontSize from '../../shared-components/AdjustFontSize';
 import FullScreenToggle from '../../shared-components/FullScreenToggle';
+import ThemeModeToggle from '../../shared-components/ThemeModeToggle';
 import LanguageSwitcher from '../../shared-components/LanguageSwitcher';
 import NavigationShortcuts from '../../shared-components/navigation/NavigationShortcuts';
 import NavigationSearch from '../../shared-components/navigation/NavigationSearch';
@@ -53,6 +54,7 @@ function ToolbarLayout2(props: ToolbarLayout2Props) {
 
 					<div className="flex h-full items-center overflow-x-auto px-8">
 						<LanguageSwitcher />
+						<ThemeModeToggle />
 						<AdjustFontSize />
 						<FullScreenToggle />
 						<NavigationSearch />
