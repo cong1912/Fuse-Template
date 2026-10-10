@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang='en'>
     <head>
         <meta charset='utf-8'>
@@ -43,6 +43,29 @@
         -->
         <title>Puco Admin</title>
 
+        <!-- Anti-FOUC (Flash of Unstyled Content) Zero-Flash Script -->
+        <script>
+            (function() {
+                try {
+                    var mode = localStorage.getItem('fuse_theme_mode') || 'system';
+                    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+                    var root = document.documentElement;
+                    if (isDark) {
+                        root.classList.add('dark');
+                        root.classList.remove('light');
+                        root.style.colorScheme = 'dark';
+                        root.style.backgroundColor = '#111827';
+                    } else {
+                        root.classList.remove('dark');
+                        root.classList.add('light');
+                        root.style.colorScheme = 'light';
+                        root.style.backgroundColor = '#f1f5f9';
+                    }
+                } catch (e) {}
+            })();
+        </script>
+
         <!-- FUSE Splash Screen CSS -->
         <style>
             body #fuse-splash-screen {
@@ -55,13 +78,18 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background-color: #111827;
-                color: #F9FAFB;
+                background-color: #f1f5f9;
+                color: #111827;
                 z-index: 999999;
                 pointer-events: none;
                 opacity: 1;
                 visibility: visible;
                 transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            html.dark body #fuse-splash-screen {
+                background-color: #111827;
+                color: #F9FAFB;
             }
 
             body #fuse-splash-screen img {
